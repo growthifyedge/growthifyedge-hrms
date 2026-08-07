@@ -41,8 +41,8 @@ does not create duplicates. It creates:
 
 | Role | Email | Password |
 | --- | --- | --- |
-| HR Administrator | `hr.admin@demo.growthifyedge.com` | choose a demo-only password |
-| Manager | `manager@demo.growthifyedge.com` | choose a demo-only password |
+| HR Administrator | `hr.admin@growthifyedge.com` | choose a demo-only password |
+| Manager | `manager@growthifyedge.com` | choose a demo-only password |
 
 Use throwaway demo passwords — never a personal or production password. The
 password is intentionally **not** committed to source control; share it with
@@ -59,12 +59,12 @@ insert into public.profiles (id, organization_id, full_name, email, role)
 select u.id, 'aaaa0000-0000-4000-8000-000000000001', 'Sofia Andersson',
        u.email, 'hr_admin'
 from auth.users u
-where u.email = 'hr.admin@demo.growthifyedge.com'
+where u.email = 'hr.admin@growthifyedge.com'
 on conflict (id) do update set role = 'hr_admin';
 
 -- Link the HR admin to the HR Director employee record
 update public.employees
-set auth_user_id = (select id from auth.users where email = 'hr.admin@demo.growthifyedge.com')
+set auth_user_id = (select id from auth.users where email = 'hr.admin@growthifyedge.com')
 where id = 'ee000000-0000-4000-8000-000000000004';
 
 -- Manager profile (Priya Sharma, Engineering Manager — has 10 direct reports)
@@ -72,12 +72,12 @@ insert into public.profiles (id, organization_id, full_name, email, role)
 select u.id, 'aaaa0000-0000-4000-8000-000000000001', 'Priya Sharma',
        u.email, 'manager'
 from auth.users u
-where u.email = 'manager@demo.growthifyedge.com'
+where u.email = 'manager@growthifyedge.com'
 on conflict (id) do update set role = 'manager';
 
 -- Link the manager to the Engineering Manager employee record
 update public.employees
-set auth_user_id = (select id from auth.users where email = 'manager@demo.growthifyedge.com')
+set auth_user_id = (select id from auth.users where email = 'manager@growthifyedge.com')
 where id = 'ee000000-0000-4000-8000-000000000008';
 ```
 

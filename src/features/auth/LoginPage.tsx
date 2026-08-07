@@ -5,8 +5,8 @@ import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/form'
 
 const DEMO_ACCOUNTS = [
-  { role: 'HR Administrator', email: 'hr.admin@demo.growthifyedge.com' },
-  { role: 'Manager', email: 'manager@demo.growthifyedge.com' },
+  { role: 'HR Administrator', email: 'hr.admin@growthifyedge.com' },
+  { role: 'Manager', email: 'manager@growthifyedge.com' },
 ]
 
 export function LoginPage() {
