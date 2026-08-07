@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  /* Executive Light design tokens */
+  --color-navy-950: #0a1628;
+  --color-navy-900: #0f2440;
+  --color-navy-800: #16304f;
+  --color-navy-700: #1f3d61;
+  --color-navy-600: #2a4d77;
+  --color-navy-300: #8ba3c2;
+  --color-navy-200: #b7c6da;
+  --color-navy-100: #dbe4ef;
+
+  --color-accent-50: #eef4fe;
+  --color-accent-100: #d9e6fc;
+  --color-accent-200: #b4cdf9;
+  --color-accent-500: #3b74d9;
+  --color-accent-600: #2c5fc0;
+  --color-accent-700: #234c9b;
+
+  --font-sans: "Segoe UI", "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+
+  --shadow-card: 0 1px 2px 0 rgb(15 36 64 / 0.05), 0 1px 3px 0 rgb(15 36 64 / 0.06);
+  --shadow-panel: 0 10px 30px -8px rgb(15 36 64 / 0.18);
+}
+
+html {
+  @apply antialiased;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 font-sans;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
