@@ -10,8 +10,8 @@ async function fillRequiredEmployeeFields(
   await dialog.getByLabel(/last name/i).fill(fields.lastName ?? 'Bot')
   await dialog.getByLabel(/work email/i).fill(fields.email)
   await dialog.getByLabel(/employee code/i).fill(fields.code)
-  await dialog.getByLabel(/^department$/i).selectOption({ index: 1 })
-  await dialog.getByLabel(/^designation$/i).selectOption({ index: 1 })
+  await dialog.getByLabel(/department/i).selectOption({ index: 1 })
+  await dialog.getByLabel(/designation/i).selectOption({ index: 1 })
   await dialog.getByLabel(/work location/i).selectOption({ index: 1 })
   await dialog.getByLabel(/joining date/i).fill('2026-01-05')
   await dialog.getByLabel(/base salary/i).fill('1000')
@@ -31,13 +31,18 @@ test.describe('People directory', () => {
 
   test('search filters results', async ({ page }) => {
     await page.getByLabel('Search directory').fill('Priya')
-    await expect(page.getByText('Priya Sharma').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('button', { name: /priya sharma/i }).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('department filter works', async ({ page }) => {
     await page.getByLabel('Filter by department').selectOption({ label: 'Engineering' })
     await expect(page.getByText(/showing/i)).toBeVisible()
-    await expect(page.getByText('Engineering').first()).toBeVisible()
+    // Ana Souza is a seeded Engineering employee on the first result page.
+    await expect(page.getByRole('button', { name: /ana souza/i }).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('pagination works', async ({ page }) => {
@@ -83,7 +88,9 @@ test.describe('People directory', () => {
     await page.getByRole('button', { name: /^add employee$/i }).last().click()
     await expect(page.getByText(/employee added successfully/i)).toBeVisible({ timeout: 15_000 })
     await page.getByLabel('Search directory').fill(`E2E-${stamp}`)
-    await expect(page.getByText(`Bot${stamp}`).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('button', { name: new RegExp(`Bot${stamp}`, 'i') }).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('duplicate employee code is rejected', async ({ page }) => {
@@ -102,7 +109,11 @@ test.describe('People directory', () => {
     await page.getByRole('button', { name: /edit employee/i }).click()
     const dialog = page.getByRole('dialog', { name: /edit employee/i })
     await expect(dialog).toBeVisible()
-    await dialog.getByLabel(/^phone$/i).fill(`+92-300-1000001`)
+    // Two "Phone" labels exist (personal + emergency contact) — scope to the section.
+    await dialog
+      .getByRole('group', { name: /personal information/i })
+      .getByLabel(/phone/i)
+      .fill('+92-300-1000001')
     await page.getByRole('button', { name: /save changes/i }).click()
     await expect(page.getByText(/employee updated successfully/i)).toBeVisible({ timeout: 15_000 })
   })

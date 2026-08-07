@@ -12,6 +12,7 @@ import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useDepartments, useManagerOptions } from '../../hooks/useLookups'
 import { getSupabase } from '../../lib/supabase'
+import { isUniqueViolation } from '../../lib/utils'
 import type { Department, RecordStatus } from '../../types/db'
 
 interface DeptForm {
@@ -79,8 +80,7 @@ export function DepartmentsSettings() {
       await qc.invalidateQueries({ queryKey: ['departments'] })
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : ''
-      if (/duplicate key|unique/i.test(message)) {
+      if (isUniqueViolation(err)) {
         setFormError('A department with this name or code already exists.')
       } else {
         setFormError('Could not save the department. Please try again.')

@@ -12,6 +12,7 @@ import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useDepartments, useDesignations } from '../../hooks/useLookups'
 import { getSupabase } from '../../lib/supabase'
+import { isUniqueViolation } from '../../lib/utils'
 import type { Designation, RecordStatus } from '../../types/db'
 
 interface DesigForm {
@@ -81,9 +82,8 @@ export function DesignationsSettings() {
       await qc.invalidateQueries({ queryKey: ['designations'] })
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : ''
       setFormError(
-        /duplicate key|unique/i.test(message)
+        isUniqueViolation(err)
           ? 'This designation already exists in the selected department.'
           : 'Could not save the designation. Please try again.',
       )

@@ -52,7 +52,7 @@ export function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title={isAdmin ? 'Executive Overview' : 'Team Overview'}
+        title={profile ? (isAdmin ? 'Executive Overview' : 'Team Overview') : 'Overview'}
         subtitle={greeting}
       />
 

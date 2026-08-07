@@ -25,7 +25,8 @@ test.describe('Authentication', () => {
 
     test('valid user signs in and reaches the dashboard', async ({ page }) => {
       await signIn(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
-      await expect(page.getByText(/executive overview/i)).toBeVisible()
+      // Title settles to "Executive Overview" once the profile has loaded.
+      await expect(page.getByText(/executive overview/i)).toBeVisible({ timeout: 15_000 })
     })
 
     test('session persists after refresh', async ({ page }) => {

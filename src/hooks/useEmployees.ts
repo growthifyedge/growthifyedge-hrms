@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '../lib/supabase'
+import { getErrorMessage, isUniqueViolation } from '../lib/utils'
 import type {
   EmergencyContact,
   Employee,
@@ -279,8 +280,8 @@ export function useUpdateEmployee(employeeId: string) {
 
 /** Detects Postgres unique-constraint violations for friendly duplicate messages. */
 export function duplicateFieldFromError(err: unknown): 'employee_code' | 'work_email' | null {
-  const message = err instanceof Error ? err.message : String(err)
-  if (!/duplicate key|unique constraint/i.test(message)) return null
+  if (!isUniqueViolation(err)) return null
+  const message = getErrorMessage(err)
   if (message.includes('employee_code')) return 'employee_code'
   if (message.includes('work_email')) return 'work_email'
   return null
