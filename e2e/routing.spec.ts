@@ -19,6 +19,18 @@ test.describe('Routing', () => {
       await expect(page.getByText(/showing/i)).toBeVisible({ timeout: 15_000 })
     })
 
+    test('employee profile deep link survives refresh', async ({ page }) => {
+      await signIn(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
+      await page.goto('/people')
+      await page.getByLabel('Search directory').fill('Amara')
+      await page.getByRole('button', { name: /amara okafor/i }).first().click()
+      await expect(page).toHaveURL(/\/people\/.+/)
+      await page.reload()
+      await expect(page.getByRole('heading', { name: /amara okafor/i })).toBeVisible({
+        timeout: 15_000,
+      })
+    })
+
     test('unknown route shows Not Found for signed-in users', async ({ page }) => {
       await signIn(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
       await page.goto('/nope')
