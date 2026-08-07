@@ -14,6 +14,8 @@ test.describe('Employee documents', () => {
 
   test('document list renders with statuses', async ({ page }) => {
     await expect(page.getByText(/document/i).first()).toBeVisible({ timeout: 15_000 })
+    // Seeded metadata-only rows show a disabled Sample badge instead of a broken View.
+    await expect(page.getByText('Sample record').first()).toBeVisible({ timeout: 15_000 })
   })
 
   test('invalid file type is rejected client-side', async ({ page }) => {

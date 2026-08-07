@@ -62,7 +62,7 @@ export function DashboardPage() {
           label="Total Employees"
           value={headcount.data?.total}
           icon={Users}
-          hint={isAdmin ? 'Across all departments' : 'You and your direct reports'}
+          hint={isAdmin ? 'Current workforce, excluding archived' : 'You and your direct reports'}
           loading={headcount.isPending}
           error={headcount.isError}
           onClick={() => navigate('/people')}

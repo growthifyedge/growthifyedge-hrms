@@ -105,6 +105,14 @@ export function useUploadDocument() {
   })
 }
 
+/**
+ * Seeded showcase rows are metadata-only — no file exists in storage.
+ * Their View action is disabled instead of producing a broken download.
+ */
+export function isSampleDocument(doc: Pick<EmployeeDocument, 'storage_path'>): boolean {
+  return doc.storage_path.includes('/seed-')
+}
+
 /** Creates a short-lived signed URL for secure viewing/downloading. */
 export function useSignedDocumentUrl() {
   return useMutation({

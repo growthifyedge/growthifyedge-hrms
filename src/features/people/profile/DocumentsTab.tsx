@@ -10,6 +10,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import {
   DOCUMENT_TYPES,
+  isSampleDocument,
   useEmployeeDocuments,
   useSignedDocumentUrl,
   useUploadDocument,
@@ -123,15 +124,24 @@ export function DocumentsTab({ employee }: { employee: EmployeeWithRelations }) 
                 </p>
               </div>
               <DocumentStatusBadge status={documentStatusFromExpiry(doc.expiry_date, doc.status)} />
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => void onView(doc.storage_path)}
-                loading={signedUrl.isPending}
-                aria-label={`View ${doc.document_name}`}
-              >
-                <Download className="h-3.5 w-3.5" aria-hidden /> View
-              </Button>
+              {isSampleDocument(doc) ? (
+                <span
+                  className="inline-flex cursor-default items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500"
+                  title="Sample record — no file attached in this showcase"
+                >
+                  Sample record
+                </span>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void onView(doc.storage_path)}
+                  loading={signedUrl.isPending}
+                  aria-label={`View ${doc.document_name}`}
+                >
+                  <Download className="h-3.5 w-3.5" aria-hidden /> View
+                </Button>
+              )}
             </li>
           ))}
         </ul>
