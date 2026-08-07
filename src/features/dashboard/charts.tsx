@@ -21,25 +21,26 @@ export function WorkforceDonut({ data }: { data: WorkforceSlice[] }) {
   if (data.length === 0) return <EmptyState title="No workforce data" />
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row">
-      <div className="h-56 w-full sm:w-1/2">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="department"
-              innerRadius="60%"
-              outerRadius="90%"
-              paddingAngle={2}
-              stroke="none"
-            >
-              {data.map((_, i) => (
-                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => [`${value} employees`, '']} />
-          </PieChart>
-        </ResponsiveContainer>
+      {/* Fixed pixel size: ResponsiveContainer measures unreliably inside a
+          two-column flex row, collapsing the donut on desktop. */}
+      <div className="flex w-full justify-center sm:w-1/2">
+        <PieChart width={230} height={220}>
+          <Pie
+            data={data}
+            dataKey="count"
+            nameKey="department"
+            innerRadius={62}
+            outerRadius={92}
+            paddingAngle={2}
+            stroke="none"
+            isAnimationActive={false}
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(value) => [`${value} employees`, '']} />
+        </PieChart>
       </div>
       <ul className="grid w-full grid-cols-2 gap-x-4 gap-y-2 sm:w-1/2 sm:grid-cols-1">
         {data.map((slice, i) => (
