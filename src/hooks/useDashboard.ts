@@ -65,7 +65,7 @@ export function usePayrollStats() {
           .select('employee_id, base_salary_usd, allowance_usd, bonus_usd, deduction_usd, pay_frequency'),
         supabase
           .from('employees')
-          .select('id, status, department_id, department:departments(id, name)')
+          .select('id, status, department_id, department:departments!employees_department_id_fkey(id, name)')
           .in('status', ['active', 'on_leave', 'probation', 'notice_period']),
       ])
       if (compErr) throw compErr
@@ -113,7 +113,7 @@ export function useWorkforceByDepartment() {
     queryFn: async (): Promise<WorkforceSlice[]> => {
       const { data, error } = await getSupabase()
         .from('employees')
-        .select('id, department:departments(name)')
+        .select('id, department:departments!employees_department_id_fkey(name)')
         .neq('status', 'inactive')
       if (error) throw error
       const counts = new Map<string, number>()
@@ -135,7 +135,7 @@ export function useRecentHires(limit = 5) {
       const { data, error } = await getSupabase()
         .from('employees')
         .select(
-          'id, first_name, last_name, avatar_url, joining_date, designation:designations(title), department:departments(name)',
+          'id, first_name, last_name, avatar_url, joining_date, designation:designations!employees_designation_id_fkey(title), department:departments!employees_department_id_fkey(name)',
         )
         .neq('status', 'future_hire')
         .neq('status', 'inactive')

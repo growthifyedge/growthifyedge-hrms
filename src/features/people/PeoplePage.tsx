@@ -98,7 +98,7 @@ export function PeoplePage() {
               value={filters.search}
               onChange={(e) => updateFilter('search', e.target.value)}
               placeholder="Search name, code or email…"
-              aria-label="Search employees"
+              aria-label="Search directory"
               className="w-full rounded-lg border border-slate-300 py-1.5 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-100"
             />
           </div>

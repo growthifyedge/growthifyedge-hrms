@@ -7,7 +7,7 @@ test.describe('Employee documents', () => {
   test.beforeEach(async ({ page }) => {
     await signIn(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
     await page.goto('/people')
-    await page.getByLabel('Search employees').fill('Amara')
+    await page.getByLabel('Search directory').fill('Amara')
     await page.getByRole('button', { name: /amara okafor/i }).first().click()
     await page.getByRole('tab', { name: 'Documents' }).click()
   })

@@ -25,12 +25,15 @@ export const EMPTY_FILTERS: EmployeeFilters = {
   employmentType: '',
 }
 
+// Embeds carry explicit FK hints: departments <-> employees has two
+// relationships (department_id and head_employee_id), and the manager
+// embed is a self-reference resolved through its FK column.
 export const EMPLOYEE_SELECT = `
   *,
-  department:departments(id, name),
-  designation:designations(id, title),
-  work_location:work_locations(id, name, city, country),
-  manager:employees!employees_manager_id_fkey(id, first_name, last_name)
+  department:departments!employees_department_id_fkey(id, name),
+  designation:designations!employees_designation_id_fkey(id, title),
+  work_location:work_locations!employees_work_location_id_fkey(id, name, city, country),
+  manager:manager_id(id, first_name, last_name)
 `
 
 export function useEmployeeDirectory(filters: EmployeeFilters, page: number, pageSize: number) {
