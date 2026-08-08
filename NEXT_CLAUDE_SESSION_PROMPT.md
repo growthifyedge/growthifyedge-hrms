@@ -7,12 +7,12 @@ with no prior chat history.
    `PROJECT_STATE.md` (exact current state) before anything else.
 2. Inspect the repository: `git status`, current branch, `git log --oneline -10`,
    and skim the folder structure.
-3. **Do not modify anything yet.** Do not start Wave 4, do not deploy, do not
-   re-run Wave 1–3 QA, do not touch DNS or Supabase settings.
+3. **Do not modify anything yet.** Do not start Wave 5, do not deploy, do not
+   re-run Wave 1–4 QA, do not touch DNS or Supabase settings.
 4. Report back a short summary of your understanding: project purpose, stack,
    deployment state, current commit, what is complete (**Wave 1 — Foundation**,
-   **Wave 2 — Time & Leave**, and **Wave 3 — Recruitment + Onboarding**, all
-   live in production) and that the next module remains Owner/GPT controlled
-   (not started).
+   **Wave 2 — Time & Leave**, **Wave 3 — Recruitment + Onboarding**, and
+   **Wave 4 — Performance Management**, all live in production) and that the
+   next module remains Owner/GPT controlled (not started).
 5. Then wait for the Owner/GPT implementation prompt before doing any
    implementation work.
