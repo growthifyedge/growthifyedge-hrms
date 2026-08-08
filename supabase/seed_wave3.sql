@@ -139,7 +139,7 @@ from (values
   ('ca000000-0000-4000-8000-000000000015', '0b000000-0000-4000-8000-000000000002',
    'Ravi Patel', 'ravi.patel@example.com', '+44-79-555-0115', 'Leicester, UK',
    3.0, 'Indeed', 4800, null, 'rejected', 'Looking for a pure hunter role — not a fit.',
-   null, null, null, 12, null),
+   null, null, null, null, 12, null),
   -- ------- Job 3: Content Strategist (open) -------
   ('ca000000-0000-4000-8000-000000000016', '0b000000-0000-4000-8000-000000000003',
    'Sofia Lindqvist', 'sofia.lindqvist@example.com', '+46-70-555-0116', 'Gothenburg, Sweden',
@@ -186,7 +186,7 @@ from (values
   ('ca000000-0000-4000-8000-000000000026', '0b000000-0000-4000-8000-000000000005',
    'Sana Farooq', 'sana.farooq@example.com', '+92-333-555-0126', 'Hyderabad, Pakistan',
    1.5, 'LinkedIn', 2000, null, 'rejected', 'Below the required experience level.',
-   null, null, null, 6, null),
+   null, null, null, null, 6, null),
   -- ------- Job 6: Software Engineer (closed — both openings filled) -------
   ('ca000000-0000-4000-8000-000000000027', '0b000000-0000-4000-8000-000000000006',
    'Hana Yamamoto', 'hana.yamamoto@example.com', '+81-3-555-0127', 'Tokyo, Japan',
