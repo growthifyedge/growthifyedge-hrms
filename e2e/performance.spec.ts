@@ -40,17 +40,21 @@ test.describe('HR admin — Performance', () => {
   })
 
   test('create a goal, then update its progress', async ({ page }) => {
+    test.slow() // create + edit round-trip against live Supabase
     await openPerformance(page)
     await page.getByRole('button', { name: /new goal/i }).click()
     await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Elena Petrova (GE-1015)' })
     await page.getByLabel('Goal title').fill(GOAL_TITLE)
-    await page.getByLabel('Category').selectOption('development')
+    await page.getByRole('combobox', { name: /^category$/i }).selectOption('development')
     await page.getByLabel('Start date').fill(futureDate(-10))
     await page.getByLabel('Target date').fill(futureDate(60))
-    await page.getByLabel('Status', { exact: true }).selectOption('in_progress')
+    await page.getByRole('combobox', { name: /^status$/i }).selectOption('in_progress')
     await page.getByLabel('Progress (%)').fill('20')
     await page.getByRole('button', { name: /create goal/i }).click()
     await expect(page.getByText('Goal created.')).toBeVisible({ timeout: 15_000 })
+    // Toasts overlay the drawer footer buttons — dismiss deterministically.
+    await page.getByRole('button', { name: 'Dismiss notification' }).first().click().catch(() => {})
+    await expect(page.getByText('Goal created.')).toBeHidden({ timeout: 10_000 })
 
     // Update progress.
     await page.getByLabel('Search goals').fill(GOAL_TITLE)
@@ -66,7 +70,7 @@ test.describe('HR admin — Performance', () => {
     await page.getByRole('tab', { name: 'Reviews' }).click()
     await expect(page.getByText('Rating distribution')).toBeVisible()
     await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText('Q1 2026 Performance Review').first()).toBeVisible()
+    await expect(page.locator('table tbody tr', { hasText: 'Q1 2026 Performance Review' }).first()).toBeVisible()
   })
 
   test('create cycle + review, complete it, rating calculated as 4.5', async ({ page }) => {
@@ -80,12 +84,14 @@ test.describe('HR admin — Performance', () => {
     await page.getByLabel('End date').fill(futureDate(30))
     await page.getByRole('button', { name: /create cycle/i }).click()
     await expect(page.getByText('Review cycle created.')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Review cycle created.')).toBeHidden({ timeout: 10_000 })
 
     await page.getByRole('button', { name: /new review/i }).click()
     await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Elena Petrova (GE-1015)' })
-    await page.getByLabel('Review cycle').selectOption({ label: CYCLE_NAME })
+    await page.getByRole('combobox', { name: /^review cycle$/i }).selectOption({ label: CYCLE_NAME })
     await page.getByRole('button', { name: /create review/i }).click()
     await expect(page.getByText('Review created — it is now pending.')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Review created — it is now pending.')).toBeHidden({ timeout: 10_000 })
 
     // Complete it: (4+4+5+5)/4 = 4.5 → Exceptional.
     await page.getByLabel('Filter by review cycle').selectOption({ label: CYCLE_NAME })

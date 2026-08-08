@@ -49,16 +49,20 @@ test.describe('Manager — Performance scoping', () => {
   })
 
   test('creates and edits a goal for a direct report', async ({ page }) => {
+    test.slow() // create + edit round-trip against live Supabase
     await page.getByRole('button', { name: /new goal/i }).click()
     await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Mateusz Kowalski (GE-1009)' })
     await page.getByLabel('Goal title').fill(TEAM_GOAL)
-    await page.getByLabel('Category').selectOption('project')
+    await page.getByRole('combobox', { name: /^category$/i }).selectOption('project')
     await page.getByLabel('Start date').fill(futureDate(0))
     await page.getByLabel('Target date').fill(futureDate(45))
-    await page.getByLabel('Status', { exact: true }).selectOption('in_progress')
+    await page.getByRole('combobox', { name: /^status$/i }).selectOption('in_progress')
     await page.getByLabel('Progress (%)').fill('10')
     await page.getByRole('button', { name: /create goal/i }).click()
     await expect(page.getByText('Goal created.')).toBeVisible({ timeout: 15_000 })
+    // Toasts overlay the drawer footer buttons — dismiss deterministically.
+    await page.getByRole('button', { name: 'Dismiss notification' }).first().click().catch(() => {})
+    await expect(page.getByText('Goal created.')).toBeHidden({ timeout: 10_000 })
 
     await page.getByLabel('Search goals').fill(TEAM_GOAL)
     await page.getByRole('button', { name: `Edit goal ${TEAM_GOAL}` }).click()
@@ -83,9 +87,10 @@ test.describe('Manager — direct report review completion', () => {
     await page.getByLabel('End date').fill(futureDate(30))
     await page.getByRole('button', { name: /create cycle/i }).click()
     await expect(page.getByText('Review cycle created.')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Review cycle created.')).toBeHidden({ timeout: 10_000 })
     await page.getByRole('button', { name: /new review/i }).click()
     await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Mateusz Kowalski (GE-1009)' })
-    await page.getByLabel('Review cycle').selectOption({ label: MGR_CYCLE })
+    await page.getByRole('combobox', { name: /^review cycle$/i }).selectOption({ label: MGR_CYCLE })
     await page.getByRole('button', { name: /create review/i }).click()
     await expect(page.getByText('Review created — it is now pending.')).toBeVisible({ timeout: 15_000 })
 
