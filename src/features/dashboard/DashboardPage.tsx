@@ -20,7 +20,6 @@ import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatDate } from '../../lib/format'
 import {
   useAnnouncements,
-  useDemoMetrics,
   useHeadcountStats,
   usePayrollStats,
   useRecentHires,
@@ -28,6 +27,8 @@ import {
 } from '../../hooks/useDashboard'
 import { useAttendanceTrend, useLatestAttendanceRate } from '../../hooks/useAttendance'
 import { useOnLeaveToday, usePendingLeave } from '../../hooks/useLeave'
+import { useRecruitmentDashboard } from '../../hooks/useRecruitment'
+import { format as formatDateFns, parseISO } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import {
   AttendanceTrendChart,
@@ -35,6 +36,34 @@ import {
   RecruitmentPipeline,
   WorkforceDonut,
 } from './charts'
+
+function PendingActionItem({
+  dotClass,
+  label,
+  detail,
+  onClick,
+}: {
+  dotClass: string
+  label: string
+  detail: string
+  onClick: () => void
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full items-start gap-3 rounded-lg p-1 text-left hover:bg-slate-50"
+      >
+        <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${dotClass}`} aria-hidden />
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-slate-800">{label}</span>
+          <span className="block truncate text-xs text-slate-500">{detail}</span>
+        </span>
+      </button>
+    </li>
+  )
+}
 
 export function DashboardPage() {
   const { profile } = useAuth()
@@ -47,19 +76,21 @@ export function DashboardPage() {
   const workforce = useWorkforceByDepartment()
   const recentHires = useRecentHires()
   const announcements = useAnnouncements()
-  // Live Wave 2 data; demo metrics now only back the deferred modules
-  // (recruitment) until their waves land.
-  const demo = useDemoMetrics()
+  // Live module data — attendance/leave (Wave 2) and recruitment (Wave 3).
+  // dashboard_demo_metrics is no longer read here.
   const attendanceRate = useLatestAttendanceRate()
   const attendanceTrend = useAttendanceTrend()
   const onLeaveToday = useOnLeaveToday()
   const pendingLeave = usePendingLeave()
+  const recruitment = useRecruitmentDashboard()
 
-  // Real pending leave approvals plus the retained demo placeholders for
-  // modules that are still deferred (documents, reviews, interviews).
-  const demoNonLeaveActions = (demo.data?.pending_actions ?? []).filter((a) => a.kind !== 'leave')
+  // Pending HR actions = leave approvals + upcoming interviews + open offers.
+  const recruitmentActions =
+    (recruitment.data?.upcomingInterviews.length ?? 0) + (recruitment.data?.offers.length ?? 0)
   const pendingActionsTotal =
-    pendingLeave.data === undefined ? undefined : pendingLeave.data.count + demoNonLeaveActions.length
+    pendingLeave.data === undefined || recruitment.data === undefined
+      ? undefined
+      : pendingLeave.data.count + recruitmentActions
 
   const greeting = profile ? `Welcome back, ${profile.full_name.split(' ')[0]}` : 'Welcome back'
 
@@ -117,11 +148,16 @@ export function DashboardPage() {
         />
         <KpiCard
           label="Open Vacancies"
-          value={demo.data?.open_vacancies}
+          value={recruitment.data?.openPositions}
           icon={BriefcaseBusiness}
-          hint="Recruitment in progress"
-          loading={demo.isPending}
-          error={demo.isError}
+          hint={
+            recruitment.data
+              ? `Across ${recruitment.data.openJobs} open role${recruitment.data.openJobs === 1 ? '' : 's'}`
+              : 'Recruitment in progress'
+          }
+          loading={recruitment.isPending}
+          error={recruitment.isError}
+          onClick={() => navigate('/recruitment')}
         />
         <KpiCard
           label="New Hires"
@@ -145,8 +181,8 @@ export function DashboardPage() {
           label="Pending HR Actions"
           value={pendingActionsTotal}
           icon={ListTodo}
-          hint="Awaiting review"
-          loading={pendingLeave.isPending || demo.isPending}
+          hint="Leave, interviews and offers"
+          loading={pendingLeave.isPending || recruitment.isPending}
           error={pendingLeave.isError}
         />
       </div>
@@ -182,13 +218,13 @@ export function DashboardPage() {
             )}
           </ChartCard>
         )}
-        <ChartCard title="Recruitment Pipeline" subtitle="Current openings (demo data)">
-          {demo.isPending ? (
+        <ChartCard title="Recruitment Pipeline" subtitle="Live candidate stages">
+          {recruitment.isPending ? (
             <Skeleton className="h-64" />
-          ) : demo.isError ? (
-            <ErrorState onRetry={() => void demo.refetch()} />
+          ) : recruitment.isError ? (
+            <ErrorState onRetry={() => void recruitment.refetch()} />
           ) : (
-            <RecruitmentPipeline data={demo.data?.recruitment_pipeline ?? []} />
+            <RecruitmentPipeline data={recruitment.data.pipeline} />
           )}
         </ChartCard>
       </div>
@@ -239,41 +275,40 @@ export function DashboardPage() {
         {isAdmin && (
           <Card className="p-5">
             <h3 className="mb-4 text-sm font-semibold text-slate-800">Pending Actions</h3>
-            {pendingLeave.isPending || demo.isPending ? (
+            {pendingLeave.isPending || recruitment.isPending ? (
               <Skeleton className="h-40" />
             ) : pendingLeave.isError ? (
               <ErrorState onRetry={() => void pendingLeave.refetch()} />
-            ) : (pendingLeave.data?.rows.length ?? 0) === 0 && demoNonLeaveActions.length === 0 ? (
+            ) : (pendingLeave.data?.rows.length ?? 0) === 0 && recruitmentActions === 0 ? (
               <EmptyState title="All caught up" message="No pending HR actions right now." />
             ) : (
               <ul className="space-y-3">
                 {(pendingLeave.data?.rows ?? []).map((req) => (
-                  <li key={req.id}>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/time-leave')}
-                      className="flex w-full items-start gap-3 rounded-lg p-1 text-left hover:bg-slate-50"
-                    >
-                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium text-slate-800">
-                          Leave approval — {req.employee ? `${req.employee.first_name} ${req.employee.last_name}` : 'Employee'}
-                        </span>
-                        <span className="block truncate text-xs text-slate-500">
-                          {req.leave_type?.name ?? 'Leave'} · {formatDate(req.start_date)} – {formatDate(req.end_date)}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
+                  <PendingActionItem
+                    key={req.id}
+                    dotClass="bg-amber-500"
+                    label={`Leave approval — ${req.employee ? `${req.employee.first_name} ${req.employee.last_name}` : 'Employee'}`}
+                    detail={`${req.leave_type?.name ?? 'Leave'} · ${formatDate(req.start_date)} – ${formatDate(req.end_date)}`}
+                    onClick={() => navigate('/time-leave')}
+                  />
                 ))}
-                {demoNonLeaveActions.map((action) => (
-                  <li key={action.id} className="flex items-start gap-3 p-1">
-                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent-500" aria-hidden />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800">{action.label}</p>
-                      <p className="truncate text-xs text-slate-500">{action.detail}</p>
-                    </div>
-                  </li>
+                {(recruitment.data?.upcomingInterviews ?? []).slice(0, 3).map((c) => (
+                  <PendingActionItem
+                    key={c.id}
+                    dotClass="bg-violet-500"
+                    label={`Interview — ${c.full_name}`}
+                    detail={`${c.jobTitle}${c.interview_at ? ` · ${formatDateFns(parseISO(c.interview_at), 'MMM d, h:mm a')}` : ''}`}
+                    onClick={() => navigate('/recruitment')}
+                  />
+                ))}
+                {(recruitment.data?.offers ?? []).slice(0, 3).map((c) => (
+                  <PendingActionItem
+                    key={c.id}
+                    dotClass="bg-accent-500"
+                    label={`Offer awaiting response — ${c.full_name}`}
+                    detail={c.jobTitle}
+                    onClick={() => navigate('/recruitment')}
+                  />
                 ))}
               </ul>
             )}

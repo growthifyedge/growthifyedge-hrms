@@ -269,6 +269,102 @@ export interface LeaveRequestWithRelations extends LeaveRequest {
   reviewer: { full_name: string } | null
 }
 
+// ---------------------------------------------------------------------------
+// Wave 3 — Recruitment + Onboarding
+// ---------------------------------------------------------------------------
+
+export type JobStatus = 'draft' | 'open' | 'closed'
+
+export type JobEmploymentType = 'full_time' | 'part_time' | 'contract' | 'internship'
+
+export type CandidateStage = 'applied' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected'
+
+export type CandidateSource = 'LinkedIn' | 'Referral' | 'Company Website' | 'Indeed' | 'Recruiter'
+
+export interface JobOpening {
+  id: string
+  organization_id: string
+  title: string
+  department_id: string | null
+  designation_id: string | null
+  location_id: string | null
+  hiring_manager_id: string | null
+  employment_type: JobEmploymentType
+  openings_count: number
+  description: string | null
+  status: JobStatus
+  posted_at: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface JobOpeningWithRelations extends JobOpening {
+  department: Pick<Department, 'id' | 'name'> | null
+  designation: Pick<Designation, 'id' | 'title'> | null
+  location: Pick<WorkLocation, 'id' | 'name' | 'city'> | null
+  hiring_manager: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
+}
+
+export interface Candidate {
+  id: string
+  organization_id: string
+  job_opening_id: string
+  full_name: string
+  email: string
+  phone: string | null
+  location_text: string | null
+  experience_years: number | null
+  source: CandidateSource
+  expected_salary: number | null
+  proposed_salary: number | null
+  stage: CandidateStage
+  notes: string | null
+  interview_at: string | null
+  interviewer_employee_id: string | null
+  interview_note: string | null
+  application_date: string
+  hired_employee_id: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CandidateWithRelations extends Candidate {
+  job: Pick<
+    JobOpening,
+    'id' | 'title' | 'hiring_manager_id' | 'department_id' | 'designation_id' | 'location_id' | 'employment_type'
+  > | null
+  interviewer: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
+}
+
+export type OnboardingTaskStatus = 'pending' | 'completed'
+
+export interface OnboardingTask {
+  id: string
+  organization_id: string
+  employee_id: string
+  task_key: string
+  title: string
+  status: OnboardingTaskStatus
+  completed_at: string | null
+  completed_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OnboardingTaskWithEmployee extends OnboardingTask {
+  employee:
+    | (Pick<
+        Employee,
+        'id' | 'first_name' | 'last_name' | 'employee_code' | 'avatar_url' | 'joining_date' | 'manager_id'
+      > & {
+        department: Pick<Department, 'id' | 'name'> | null
+        manager: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
+      })
+    | null
+}
+
 export interface PendingAction {
   id: string
   label: string
