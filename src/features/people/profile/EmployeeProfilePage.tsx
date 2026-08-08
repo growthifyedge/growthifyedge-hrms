@@ -15,7 +15,6 @@ import {
   useEmployee,
   useEmployeeCompensation,
 } from '../../../hooks/useEmployees'
-import { useDemoMetrics } from '../../../hooks/useDashboard'
 import {
   EMPLOYMENT_TYPE_LABELS,
   PAY_FREQUENCY_LABELS,
@@ -25,6 +24,8 @@ import {
 import { estimatedNetUsd } from '../../../lib/currency'
 import { EmployeeFormDrawer } from '../EmployeeFormDrawer'
 import { DocumentsTab } from './DocumentsTab'
+import { AttendanceTab } from './AttendanceTab'
+import { LeaveTab } from './LeaveTab'
 import type { EmployeeCompensation } from '../../../types/db'
 
 const TABS = [
@@ -135,10 +136,8 @@ export function EmployeeProfilePage() {
       <div className="mt-5">
         {tab === 'overview' && <OverviewTab emp={emp} emergencyContact={emergencyContact.data ?? null} comp={comp} />}
         {tab === 'employment' && <EmploymentTab emp={emp} comp={comp} />}
-        {tab === 'attendance' && <AttendanceTab />}
-        {tab === 'leave' && (
-          <Card><ComingSoon module="Leave management" /></Card>
-        )}
+        {tab === 'attendance' && <AttendanceTab employeeId={emp.id} />}
+        {tab === 'leave' && <LeaveTab employeeId={emp.id} />}
         {tab === 'performance' && (
           <Card><ComingSoon module="Performance reviews" /></Card>
         )}
@@ -292,28 +291,6 @@ function EmploymentTab({
             </li>
           )}
         </ol>
-      </Card>
-    </div>
-  )
-}
-
-function AttendanceTab() {
-  const demo = useDemoMetrics()
-  return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <Card className="p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Org attendance rate</p>
-        {demo.isPending ? (
-          <Skeleton className="mt-2 h-7 w-16" />
-        ) : (
-          <p className="mt-1 text-2xl font-semibold text-slate-900">
-            {demo.data ? `${demo.data.attendance_rate}%` : '—'}
-          </p>
-        )}
-        <p className="mt-1 text-xs text-slate-500">Organization-wide, last 30 working days</p>
-      </Card>
-      <Card className="lg:col-span-2">
-        <ComingSoon module="Individual attendance tracking" />
       </Card>
     </div>
   )

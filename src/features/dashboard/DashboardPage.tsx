@@ -26,6 +26,8 @@ import {
   useRecentHires,
   useWorkforceByDepartment,
 } from '../../hooks/useDashboard'
+import { useAttendanceTrend, useLatestAttendanceRate } from '../../hooks/useAttendance'
+import { useOnLeaveToday, usePendingLeave } from '../../hooks/useLeave'
 import { useNavigate } from 'react-router-dom'
 import {
   AttendanceTrendChart,
@@ -45,7 +47,19 @@ export function DashboardPage() {
   const workforce = useWorkforceByDepartment()
   const recentHires = useRecentHires()
   const announcements = useAnnouncements()
+  // Live Wave 2 data; demo metrics now only back the deferred modules
+  // (recruitment) until their waves land.
   const demo = useDemoMetrics()
+  const attendanceRate = useLatestAttendanceRate()
+  const attendanceTrend = useAttendanceTrend()
+  const onLeaveToday = useOnLeaveToday()
+  const pendingLeave = usePendingLeave()
+
+  // Real pending leave approvals plus the retained demo placeholders for
+  // modules that are still deferred (documents, reviews, interviews).
+  const demoNonLeaveActions = (demo.data?.pending_actions ?? []).filter((a) => a.kind !== 'leave')
+  const pendingActionsTotal =
+    pendingLeave.data === undefined ? undefined : pendingLeave.data.count + demoNonLeaveActions.length
 
   const greeting = profile ? `Welcome back, ${profile.full_name.split(' ')[0]}` : 'Welcome back'
 
@@ -77,19 +91,29 @@ export function DashboardPage() {
         />
         <KpiCard
           label="On Leave Today"
-          value={demo.data?.on_leave_today}
+          value={onLeaveToday.data}
           icon={CalendarOff}
-          hint="From leave calendar"
-          loading={demo.isPending}
-          error={demo.isError}
+          hint="Approved leave covering today"
+          loading={onLeaveToday.isPending}
+          error={onLeaveToday.isError}
+          onClick={() => navigate('/time-leave')}
         />
         <KpiCard
           label="Attendance Rate"
-          value={demo.data ? `${demo.data.attendance_rate}%` : undefined}
+          value={
+            attendanceRate.data?.rate === null || attendanceRate.data?.rate === undefined
+              ? undefined
+              : `${attendanceRate.data.rate}%`
+          }
           icon={Activity}
-          hint="Last 30 working days"
-          loading={demo.isPending}
-          error={demo.isError}
+          hint={
+            attendanceRate.data?.date
+              ? `Latest working day (${formatDate(attendanceRate.data.date)})`
+              : 'Latest working day'
+          }
+          loading={attendanceRate.isPending}
+          error={attendanceRate.isError}
+          onClick={() => navigate('/time-leave')}
         />
         <KpiCard
           label="Open Vacancies"
@@ -119,11 +143,11 @@ export function DashboardPage() {
         )}
         <KpiCard
           label="Pending HR Actions"
-          value={demo.data?.pending_hr_actions}
+          value={pendingActionsTotal}
           icon={ListTodo}
           hint="Awaiting review"
-          loading={demo.isPending}
-          error={demo.isError}
+          loading={pendingLeave.isPending || demo.isPending}
+          error={pendingLeave.isError}
         />
       </div>
 
@@ -138,13 +162,13 @@ export function DashboardPage() {
             <WorkforceDonut data={workforce.data} />
           )}
         </ChartCard>
-        <ChartCard title="Attendance Trend" subtitle="Recent working days (demo data)">
-          {demo.isPending ? (
+        <ChartCard title="Attendance Trend" subtitle="Recent working days">
+          {attendanceTrend.isPending ? (
             <Skeleton className="h-64" />
-          ) : demo.isError ? (
-            <ErrorState onRetry={() => void demo.refetch()} />
+          ) : attendanceTrend.isError ? (
+            <ErrorState onRetry={() => void attendanceTrend.refetch()} />
           ) : (
-            <AttendanceTrendChart data={demo.data?.attendance_trend ?? []} />
+            <AttendanceTrendChart data={attendanceTrend.data} />
           )}
         </ChartCard>
         {isAdmin && (
@@ -215,16 +239,35 @@ export function DashboardPage() {
         {isAdmin && (
           <Card className="p-5">
             <h3 className="mb-4 text-sm font-semibold text-slate-800">Pending Actions</h3>
-            {demo.isPending ? (
+            {pendingLeave.isPending || demo.isPending ? (
               <Skeleton className="h-40" />
-            ) : demo.isError ? (
-              <ErrorState onRetry={() => void demo.refetch()} />
-            ) : !demo.data?.pending_actions || demo.data.pending_actions.length === 0 ? (
+            ) : pendingLeave.isError ? (
+              <ErrorState onRetry={() => void pendingLeave.refetch()} />
+            ) : (pendingLeave.data?.rows.length ?? 0) === 0 && demoNonLeaveActions.length === 0 ? (
               <EmptyState title="All caught up" message="No pending HR actions right now." />
             ) : (
               <ul className="space-y-3">
-                {demo.data.pending_actions.map((action) => (
-                  <li key={action.id} className="flex items-start gap-3">
+                {(pendingLeave.data?.rows ?? []).map((req) => (
+                  <li key={req.id}>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/time-leave')}
+                      className="flex w-full items-start gap-3 rounded-lg p-1 text-left hover:bg-slate-50"
+                    >
+                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-slate-800">
+                          Leave approval — {req.employee ? `${req.employee.first_name} ${req.employee.last_name}` : 'Employee'}
+                        </span>
+                        <span className="block truncate text-xs text-slate-500">
+                          {req.leave_type?.name ?? 'Leave'} · {formatDate(req.start_date)} – {formatDate(req.end_date)}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+                {demoNonLeaveActions.map((action) => (
+                  <li key={action.id} className="flex items-start gap-3 p-1">
                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent-500" aria-hidden />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-800">{action.label}</p>

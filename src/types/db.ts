@@ -182,6 +182,93 @@ export interface ExchangeRate {
   updated_at: string
 }
 
+// ---------------------------------------------------------------------------
+// Wave 2 — Time & Leave
+// ---------------------------------------------------------------------------
+
+export type AttendanceStatus = 'present' | 'late' | 'absent' | 'remote' | 'on_leave'
+
+export type ShiftType = 'morning' | 'standard' | 'evening'
+
+export type LeaveStatus = 'pending' | 'approved' | 'rejected'
+
+export interface AttendanceRecord {
+  id: string
+  organization_id: string
+  employee_id: string
+  attendance_date: string
+  status: AttendanceStatus
+  shift: ShiftType
+  check_in: string | null
+  check_out: string | null
+  notes: string | null
+  marked_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** Compact employee embed used by attendance and leave listings. */
+export interface EmployeeSummary {
+  id: string
+  first_name: string
+  last_name: string
+  employee_code: string
+  avatar_url: string | null
+  manager_id: string | null
+  department: Pick<Department, 'id' | 'name'> | null
+}
+
+export interface AttendanceRecordWithEmployee extends AttendanceRecord {
+  employee: EmployeeSummary | null
+}
+
+export interface LeaveType {
+  id: string
+  organization_id: string
+  name: string
+  code: string
+  default_entitlement_days: number
+  is_paid: boolean
+  status: RecordStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface LeaveBalance {
+  id: string
+  organization_id: string
+  employee_id: string
+  leave_type_id: string
+  year: number
+  entitlement_days: number
+  created_at: string
+  updated_at: string
+}
+
+export interface LeaveRequest {
+  id: string
+  organization_id: string
+  employee_id: string
+  leave_type_id: string
+  start_date: string
+  end_date: string
+  days_requested: number
+  reason: string
+  status: LeaveStatus
+  submitted_by: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LeaveRequestWithRelations extends LeaveRequest {
+  employee: EmployeeSummary | null
+  leave_type: Pick<LeaveType, 'id' | 'name' | 'code' | 'is_paid'> | null
+  reviewer: { full_name: string } | null
+}
+
 export interface PendingAction {
   id: string
   label: string

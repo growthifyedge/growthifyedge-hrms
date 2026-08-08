@@ -29,8 +29,8 @@ describe('navItemsForRole', () => {
     expect(navItemsForRole(undefined)).toEqual([])
   })
 
-  it('only enables Wave 1 destinations', () => {
+  it('only enables shipped destinations (Waves 1–2)', () => {
     const enabled = NAV_ITEMS.filter((i) => i.enabled).map((i) => i.label)
-    expect(enabled.sort()).toEqual(['Dashboard', 'People', 'Settings'].sort())
+    expect(enabled.sort()).toEqual(['Dashboard', 'People', 'Settings', 'Time & Leave'].sort())
   })
 })

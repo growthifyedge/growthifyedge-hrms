@@ -22,6 +22,9 @@ const EmployeeProfilePage = lazy(() =>
     default: m.EmployeeProfilePage,
   })),
 )
+const TimeLeavePage = lazy(() =>
+  import('./features/timeleave/TimeLeavePage').then((m) => ({ default: m.TimeLeavePage })),
+)
 const SettingsPage = lazy(() =>
   import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 )
@@ -115,6 +118,14 @@ export default function App() {
                   element={
                     <Protected roles={['hr_admin', 'manager']}>
                       <EmployeeProfilePage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/time-leave"
+                  element={
+                    <Protected>
+                      <TimeLeavePage />
                     </Protected>
                   }
                 />

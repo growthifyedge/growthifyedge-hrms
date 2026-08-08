@@ -24,7 +24,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, enabled: true, roles: ['hr_admin', 'manager', 'employee'] },
   { label: 'People', path: '/people', icon: Users, enabled: true, roles: ['hr_admin', 'manager'] },
-  { label: 'Time & Leave', path: '/time-leave', icon: CalendarClock, enabled: false, roles: ['hr_admin', 'manager', 'employee'] },
+  { label: 'Time & Leave', path: '/time-leave', icon: CalendarClock, enabled: true, roles: ['hr_admin', 'manager', 'employee'] },
   { label: 'Recruitment', path: '/recruitment', icon: Briefcase, enabled: false, roles: ['hr_admin', 'manager'] },
   { label: 'Performance', path: '/performance', icon: Target, enabled: false, roles: ['hr_admin', 'manager', 'employee'] },
   { label: 'Payroll', path: '/payroll', icon: Wallet, enabled: false, roles: ['hr_admin'] },
