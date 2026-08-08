@@ -29,10 +29,10 @@ describe('navItemsForRole', () => {
     expect(navItemsForRole(undefined)).toEqual([])
   })
 
-  it('only enables shipped destinations (Waves 1–3)', () => {
+  it('only enables shipped destinations (Waves 1–4)', () => {
     const enabled = NAV_ITEMS.filter((i) => i.enabled).map((i) => i.label)
     expect(enabled.sort()).toEqual(
-      ['Dashboard', 'People', 'Recruitment', 'Settings', 'Time & Leave'].sort(),
+      ['Dashboard', 'People', 'Performance', 'Recruitment', 'Settings', 'Time & Leave'].sort(),
     )
   })
 })

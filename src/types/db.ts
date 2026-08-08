@@ -365,6 +365,78 @@ export interface OnboardingTaskWithEmployee extends OnboardingTask {
     | null
 }
 
+// ---------------------------------------------------------------------------
+// Wave 4 — Performance Management
+// ---------------------------------------------------------------------------
+
+export type GoalCategory = 'performance' | 'development' | 'project' | 'leadership'
+
+export type GoalStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled'
+
+export type CycleStatus = 'draft' | 'active' | 'closed'
+
+export type ReviewStatus = 'pending' | 'completed'
+
+export interface PerformanceGoal {
+  id: string
+  organization_id: string
+  employee_id: string
+  manager_employee_id: string | null
+  title: string
+  description: string | null
+  category: GoalCategory
+  start_date: string
+  target_date: string
+  progress_percent: number
+  status: GoalStatus
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PerformanceGoalWithRelations extends PerformanceGoal {
+  employee: EmployeeSummary | null
+  manager: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
+}
+
+export interface PerformanceCycle {
+  id: string
+  organization_id: string
+  name: string
+  start_date: string
+  end_date: string
+  status: CycleStatus
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PerformanceReview {
+  id: string
+  organization_id: string
+  employee_id: string
+  cycle_id: string
+  reviewer_employee_id: string | null
+  goal_achievement_rating: number | null
+  quality_rating: number | null
+  collaboration_rating: number | null
+  initiative_rating: number | null
+  overall_rating: number | null
+  strengths: string | null
+  development_areas: string | null
+  overall_comments: string | null
+  status: ReviewStatus
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PerformanceReviewWithRelations extends PerformanceReview {
+  employee: EmployeeSummary | null
+  cycle: Pick<PerformanceCycle, 'id' | 'name' | 'status'> | null
+  reviewer: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
+}
+
 export interface PendingAction {
   id: string
   label: string

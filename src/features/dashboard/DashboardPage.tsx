@@ -28,6 +28,7 @@ import {
 import { useAttendanceTrend, useLatestAttendanceRate } from '../../hooks/useAttendance'
 import { useOnLeaveToday, usePendingLeave } from '../../hooks/useLeave'
 import { useRecruitmentDashboard } from '../../hooks/useRecruitment'
+import { useReviewsDue } from '../../hooks/usePerformance'
 import { format as formatDateFns, parseISO } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -83,14 +84,16 @@ export function DashboardPage() {
   const onLeaveToday = useOnLeaveToday()
   const pendingLeave = usePendingLeave()
   const recruitment = useRecruitmentDashboard()
+  const reviewsDue = useReviewsDue()
 
-  // Pending HR actions = leave approvals + upcoming interviews + open offers.
+  // Pending HR actions = leave approvals + upcoming interviews + open
+  // offers + performance reviews due in active cycles.
   const recruitmentActions =
     (recruitment.data?.upcomingInterviews.length ?? 0) + (recruitment.data?.offers.length ?? 0)
   const pendingActionsTotal =
-    pendingLeave.data === undefined || recruitment.data === undefined
+    pendingLeave.data === undefined || recruitment.data === undefined || reviewsDue.data === undefined
       ? undefined
-      : pendingLeave.data.count + recruitmentActions
+      : pendingLeave.data.count + recruitmentActions + reviewsDue.data.count
 
   const greeting = profile ? `Welcome back, ${profile.full_name.split(' ')[0]}` : 'Welcome back'
 
@@ -181,8 +184,8 @@ export function DashboardPage() {
           label="Pending HR Actions"
           value={pendingActionsTotal}
           icon={ListTodo}
-          hint="Leave, interviews and offers"
-          loading={pendingLeave.isPending || recruitment.isPending}
+          hint="Leave, recruitment and reviews"
+          loading={pendingLeave.isPending || recruitment.isPending || reviewsDue.isPending}
           error={pendingLeave.isError}
         />
       </div>
@@ -279,7 +282,9 @@ export function DashboardPage() {
               <Skeleton className="h-40" />
             ) : pendingLeave.isError ? (
               <ErrorState onRetry={() => void pendingLeave.refetch()} />
-            ) : (pendingLeave.data?.rows.length ?? 0) === 0 && recruitmentActions === 0 ? (
+            ) : (pendingLeave.data?.rows.length ?? 0) === 0 &&
+              recruitmentActions === 0 &&
+              (reviewsDue.data?.count ?? 0) === 0 ? (
               <EmptyState title="All caught up" message="No pending HR actions right now." />
             ) : (
               <ul className="space-y-3">
@@ -308,6 +313,15 @@ export function DashboardPage() {
                     label={`Offer awaiting response — ${c.full_name}`}
                     detail={c.jobTitle}
                     onClick={() => navigate('/recruitment')}
+                  />
+                ))}
+                {(reviewsDue.data?.rows ?? []).map((r) => (
+                  <PendingActionItem
+                    key={r.id}
+                    dotClass="bg-emerald-500"
+                    label={`Review due — ${r.employee ? `${r.employee.first_name} ${r.employee.last_name}` : 'Employee'}`}
+                    detail={r.cycle?.name ?? 'Active review cycle'}
+                    onClick={() => navigate('/performance')}
                   />
                 ))}
               </ul>

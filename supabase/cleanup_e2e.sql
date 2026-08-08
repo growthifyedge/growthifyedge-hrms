@@ -7,6 +7,19 @@
 delete from public.leave_requests
 where reason like 'E2E %';
 
+-- Wave 4: performance artifacts. Reviews in E2E cycles first (FK), then
+-- the cycles and any E2E-titled goals.
+delete from public.performance_reviews
+where cycle_id in (
+  select id from public.performance_cycles where name like 'E2E %'
+);
+
+delete from public.performance_cycles
+where name like 'E2E %';
+
+delete from public.performance_goals
+where title like 'E2E %';
+
 -- Wave 3: recruitment artifacts. Candidates first (their hired_employee_id
 -- references the E2E employees removed below), then E2E job openings and
 -- the onboarding checklists of E2E-hired employees.
@@ -42,4 +55,6 @@ select
   (select count(*) from public.leave_requests where reason like 'E2E %') as e2e_leave_requests,
   (select count(*) from public.candidates where email like 'e2e.%' or full_name like 'E2E %') as e2e_candidates,
   (select count(*) from public.job_openings where title like 'E2E %') as e2e_jobs,
+  (select count(*) from public.performance_cycles where name like 'E2E %') as e2e_cycles,
+  (select count(*) from public.performance_goals where title like 'E2E %') as e2e_goals,
   (select count(*) from public.employees) as total_employees;

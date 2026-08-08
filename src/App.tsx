@@ -28,6 +28,9 @@ const TimeLeavePage = lazy(() =>
 const RecruitmentPage = lazy(() =>
   import('./features/recruitment/RecruitmentPage').then((m) => ({ default: m.RecruitmentPage })),
 )
+const PerformancePage = lazy(() =>
+  import('./features/performance/PerformancePage').then((m) => ({ default: m.PerformancePage })),
+)
 const SettingsPage = lazy(() =>
   import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 )
@@ -137,6 +140,14 @@ export default function App() {
                   element={
                     <Protected roles={['hr_admin', 'manager']}>
                       <RecruitmentPage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/performance"
+                  element={
+                    <Protected roles={['hr_admin', 'manager']}>
+                      <PerformancePage />
                     </Protected>
                   }
                 />

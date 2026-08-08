@@ -7,7 +7,7 @@ import { Button } from '../../../components/ui/Button'
 import { EmployeeStatusBadge } from '../../../components/ui/StatusBadge'
 import { Tabs } from '../../../components/ui/Tabs'
 import { Skeleton } from '../../../components/ui/Skeleton'
-import { ComingSoon, EmptyState, ErrorState } from '../../../components/ui/states'
+import { EmptyState, ErrorState } from '../../../components/ui/states'
 import { MoneyDisplay } from '../../../components/ui/MoneyDisplay'
 import { useAuth } from '../../../contexts/AuthContext'
 import {
@@ -26,6 +26,7 @@ import { EmployeeFormDrawer } from '../EmployeeFormDrawer'
 import { DocumentsTab } from './DocumentsTab'
 import { AttendanceTab } from './AttendanceTab'
 import { LeaveTab } from './LeaveTab'
+import { PerformanceTab } from './PerformanceTab'
 import type { EmployeeCompensation } from '../../../types/db'
 
 const TABS = [
@@ -138,9 +139,7 @@ export function EmployeeProfilePage() {
         {tab === 'employment' && <EmploymentTab emp={emp} comp={comp} />}
         {tab === 'attendance' && <AttendanceTab employeeId={emp.id} />}
         {tab === 'leave' && <LeaveTab employeeId={emp.id} />}
-        {tab === 'performance' && (
-          <Card><ComingSoon module="Performance reviews" /></Card>
-        )}
+        {tab === 'performance' && <PerformanceTab employeeId={emp.id} />}
         {tab === 'payroll' && <PayrollTab comp={comp} loading={compensation.isPending} />}
         {tab === 'documents' && <DocumentsTab employee={emp} />}
       </div>
