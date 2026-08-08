@@ -89,7 +89,7 @@ test.describe('HR admin — Payroll', () => {
     await page.getByRole('tab', { name: 'Payroll Runs' }).click()
     await page.getByRole('button', { name: `Finalize payroll for ${RUN_PERIOD}` }).click()
     await expect(page.getByText(/entries become read-only/i)).toBeVisible()
-    await page.getByRole('button', { name: 'Finalize payroll' }).click()
+    await page.getByRole('button', { name: 'Finalize payroll', exact: true }).click()
     await expect(page.getByText(`${RUN_PERIOD} payroll finalized.`)).toBeVisible({ timeout: 20_000 })
     await page.getByRole('button', { name: 'Dismiss notification' }).first().click().catch(() => {})
 
