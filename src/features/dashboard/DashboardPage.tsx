@@ -29,6 +29,8 @@ import { useAttendanceTrend, useLatestAttendanceRate } from '../../hooks/useAtte
 import { useOnLeaveToday, usePendingLeave } from '../../hooks/useLeave'
 import { useRecruitmentDashboard } from '../../hooks/useRecruitment'
 import { useReviewsDue } from '../../hooks/usePerformance'
+import { useLatestPayroll } from '../../hooks/usePayroll'
+import { PAYROLL_STATUS_LABELS, formatPeriod } from '../../lib/payroll'
 import { format as formatDateFns, parseISO } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -85,6 +87,7 @@ export function DashboardPage() {
   const pendingLeave = usePendingLeave()
   const recruitment = useRecruitmentDashboard()
   const reviewsDue = useReviewsDue()
+  const latestPayroll = useLatestPayroll()
 
   // Pending HR actions = leave approvals + upcoming interviews + open
   // offers + performance reviews due in active cycles.
@@ -172,12 +175,23 @@ export function DashboardPage() {
         />
         {isAdmin && (
           <KpiCard
-            label="Monthly Payroll Estimate"
-            value={payroll.data ? format(payroll.data.monthlyTotalUsd, { compact: true }) : undefined}
+            label="Monthly Payroll"
+            value={
+              latestPayroll.data
+                ? format(latestPayroll.data.total_net, { compact: true })
+                : latestPayroll.isPending
+                  ? undefined
+                  : '—'
+            }
             icon={Wallet}
-            hint="Estimated gross, current staff"
-            loading={payroll.isPending}
-            error={payroll.isError}
+            hint={
+              latestPayroll.data
+                ? `${formatPeriod(latestPayroll.data.period_month)} · ${PAYROLL_STATUS_LABELS[latestPayroll.data.status]}`
+                : 'No payroll runs yet'
+            }
+            loading={latestPayroll.isPending}
+            error={latestPayroll.isError}
+            onClick={() => navigate('/payroll')}
           />
         )}
         <KpiCard

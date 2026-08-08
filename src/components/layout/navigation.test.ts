@@ -29,10 +29,15 @@ describe('navItemsForRole', () => {
     expect(navItemsForRole(undefined)).toEqual([])
   })
 
-  it('only enables shipped destinations (Waves 1–4)', () => {
+  it('only enables shipped destinations (Waves 1–5)', () => {
     const enabled = NAV_ITEMS.filter((i) => i.enabled).map((i) => i.label)
     expect(enabled.sort()).toEqual(
-      ['Dashboard', 'People', 'Performance', 'Recruitment', 'Settings', 'Time & Leave'].sort(),
+      ['Dashboard', 'Payroll', 'People', 'Performance', 'Recruitment', 'Settings', 'Time & Leave'].sort(),
     )
+  })
+
+  it('keeps Payroll hidden from managers and employees', () => {
+    expect(navItemsForRole('manager').map((i) => i.label)).not.toContain('Payroll')
+    expect(navItemsForRole('employee').map((i) => i.label)).not.toContain('Payroll')
   })
 })

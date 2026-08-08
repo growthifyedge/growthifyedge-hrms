@@ -22,6 +22,9 @@ import {
   fullName,
 } from '../../../lib/format'
 import { estimatedNetUsd } from '../../../lib/currency'
+import { useEmployeePayroll } from '../../../hooks/usePayroll'
+import { formatPeriod } from '../../../lib/payroll'
+import { PayrollStatusBadge } from '../../payroll/RunsTab'
 import { EmployeeFormDrawer } from '../EmployeeFormDrawer'
 import { DocumentsTab } from './DocumentsTab'
 import { AttendanceTab } from './AttendanceTab'
@@ -140,7 +143,7 @@ export function EmployeeProfilePage() {
         {tab === 'attendance' && <AttendanceTab employeeId={emp.id} />}
         {tab === 'leave' && <LeaveTab employeeId={emp.id} />}
         {tab === 'performance' && <PerformanceTab employeeId={emp.id} />}
-        {tab === 'payroll' && <PayrollTab comp={comp} loading={compensation.isPending} />}
+        {tab === 'payroll' && <PayrollTab comp={comp} loading={compensation.isPending} employeeId={emp.id} />}
         {tab === 'documents' && <DocumentsTab employee={emp} />}
       </div>
 
@@ -295,7 +298,18 @@ function EmploymentTab({
   )
 }
 
-function PayrollTab({ comp, loading }: { comp: EmployeeCompensation | null; loading: boolean }) {
+function PayrollTab({
+  comp,
+  loading,
+  employeeId,
+}: {
+  comp: EmployeeCompensation | null
+  loading: boolean
+  employeeId: string
+}) {
+  const payroll = useEmployeePayroll(employeeId)
+  const latest = payroll.data?.[0] ?? null
+
   if (loading) return <Skeleton className="h-56" />
   if (!comp) {
     return (
@@ -308,25 +322,57 @@ function PayrollTab({ comp, loading }: { comp: EmployeeCompensation | null; load
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card className="p-5">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Pay breakdown</h3>
+        <h3 className="mb-2 text-sm font-semibold text-slate-800">Compensation</h3>
         <dl className="divide-y divide-slate-100">
           <DetailRow label="Base salary" value={<MoneyDisplay amountUsd={comp.base_salary_usd} />} />
           <DetailRow label="Allowance" value={<MoneyDisplay amountUsd={comp.allowance_usd} />} />
           <DetailRow label="Bonus" value={<MoneyDisplay amountUsd={comp.bonus_usd} />} />
           <DetailRow label="Deduction" value={<MoneyDisplay amountUsd={comp.deduction_usd} />} />
+          <DetailRow label="Pay frequency" value={PAY_FREQUENCY_LABELS[comp.pay_frequency]} />
+          <DetailRow label="Estimated net / period" value={<MoneyDisplay amountUsd={net} />} />
         </dl>
       </Card>
       <Card className="p-5">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Estimated net</h3>
-        <p className="text-3xl font-semibold text-slate-900">
-          <MoneyDisplay amountUsd={net} />
-        </p>
-        <p className="mt-1 text-sm text-slate-500">
-          per {PAY_FREQUENCY_LABELS[comp.pay_frequency].toLowerCase()} period
-        </p>
+        <h3 className="mb-2 text-sm font-semibold text-slate-800">Latest payroll</h3>
+        {payroll.isPending ? (
+          <Skeleton className="h-40" />
+        ) : !latest ? (
+          <p className="py-2 text-sm text-slate-500">No payroll records yet.</p>
+        ) : (
+          <>
+            <dl className="divide-y divide-slate-100">
+              <DetailRow label="Month" value={formatPeriod(latest.run?.period_month)} />
+              <DetailRow label="Base pay" value={<MoneyDisplay amountUsd={latest.base_pay} />} />
+              <DetailRow label="Allowances" value={<MoneyDisplay amountUsd={latest.allowances} />} />
+              <DetailRow label="Deductions" value={<MoneyDisplay amountUsd={latest.deductions} />} />
+              <DetailRow label="Net pay" value={<MoneyDisplay amountUsd={latest.net_pay} />} />
+              <DetailRow label="Status" value={<PayrollStatusBadge status={latest.status} />} />
+            </dl>
+            {(payroll.data?.length ?? 0) > 1 && (
+              <>
+                <h4 className="mb-1 mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Recent payroll
+                </h4>
+                <ul className="divide-y divide-slate-100 text-sm">
+                  {(payroll.data ?? []).slice(1, 4).map((entry) => (
+                    <li key={entry.id} className="flex items-center justify-between py-2">
+                      <span className="text-slate-600">{formatPeriod(entry.run?.period_month)}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="font-medium text-slate-800">
+                          <MoneyDisplay amountUsd={entry.net_pay} />
+                        </span>
+                        <PayrollStatusBadge status={entry.status} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )}
         <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-500">
-          This is a compensation overview, not processed payroll. Values are stored in USD and
-          converted to your selected display currency.
+          Values are stored in USD and converted to your selected display currency. Payroll
+          amounts are historical snapshots and do not change with compensation edits.
         </p>
       </Card>
     </div>

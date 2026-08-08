@@ -7,6 +7,16 @@
 delete from public.leave_requests
 where reason like 'E2E %';
 
+-- Wave 5: payroll artifacts. E2E payroll runs always use far-future months
+-- (2030+); seeded demo runs use the current/recent months and never match.
+delete from public.payroll_entries
+where payroll_run_id in (
+  select id from public.payroll_runs where period_month >= date '2030-01-01'
+);
+
+delete from public.payroll_runs
+where period_month >= date '2030-01-01';
+
 -- Wave 4: performance artifacts. Reviews in E2E cycles first (FK), then
 -- the cycles and any E2E-titled goals.
 delete from public.performance_reviews
@@ -57,4 +67,5 @@ select
   (select count(*) from public.job_openings where title like 'E2E %') as e2e_jobs,
   (select count(*) from public.performance_cycles where name like 'E2E %') as e2e_cycles,
   (select count(*) from public.performance_goals where title like 'E2E %') as e2e_goals,
+  (select count(*) from public.payroll_runs where period_month >= date '2030-01-01') as e2e_payroll_runs,
   (select count(*) from public.employees) as total_employees;

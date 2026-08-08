@@ -437,6 +437,48 @@ export interface PerformanceReviewWithRelations extends PerformanceReview {
   reviewer: Pick<Employee, 'id' | 'first_name' | 'last_name'> | null
 }
 
+// ---------------------------------------------------------------------------
+// Wave 5 — Payroll Overview
+// ---------------------------------------------------------------------------
+
+export type PayrollStatus = 'draft' | 'finalized' | 'paid'
+
+export interface PayrollRun {
+  id: string
+  organization_id: string
+  period_month: string
+  status: PayrollStatus
+  employee_count: number
+  total_gross: number
+  total_deductions: number
+  total_net: number
+  finalized_by: string | null
+  finalized_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PayrollEntry {
+  id: string
+  organization_id: string
+  payroll_run_id: string
+  employee_id: string
+  base_pay: number
+  allowances: number
+  deductions: number
+  gross_pay: number
+  net_pay: number
+  status: PayrollStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface PayrollEntryWithRelations extends PayrollEntry {
+  employee: EmployeeSummary | null
+  run: Pick<PayrollRun, 'id' | 'period_month' | 'status'> | null
+}
+
 export interface PendingAction {
   id: string
   label: string
