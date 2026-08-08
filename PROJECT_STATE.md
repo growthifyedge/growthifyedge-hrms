@@ -6,9 +6,10 @@
 - **Wave 2 — Time & Leave: COMPLETE** (live in production).
 - **Wave 3 — Recruitment + Onboarding: COMPLETE** (live in production).
 - **Wave 4 — Performance Management: COMPLETE** (live in production).
-- **Wave 5: NOT STARTED.** The next module (remaining deferred nav items:
-  Payroll, Analytics) is Owner/GPT controlled — do not begin it unprompted.
-  Do not re-run Wave 1–4 QA unless a regression is discovered.
+- **Wave 5 — Payroll Overview: COMPLETE** (live in production).
+- **Wave 6: NOT STARTED.** Analytics is the only deferred nav item left.
+  The next module is Owner/GPT controlled — do not begin it unprompted.
+  Do not re-run Wave 1–5 QA unless a regression is discovered.
 
 ## Deployment
 
@@ -19,63 +20,65 @@
   production branch `main`). Branch previews build automatically.
 - **GitHub:** https://github.com/growthifyedge/growthifyedge-hrms
   (branches `main` + one feature branch per wave).
-- **Production commit:** `5ef6477` — Wave 4 merged fast-forward to `main`;
-  verified live (Wave 4 bundle served, `/performance` deep link 200,
+- **Production commit:** `8b0096f` — Wave 5 merged fast-forward to `main`;
+  verified live (Wave 5 bundle served, `/payroll` deep link 200,
   authenticated smoke test passed against production).
 
 ## Backend (Supabase, project ref wjtsmpsflwxvkhxqcfyl)
 
-- Migrations applied: `0001_schema.sql` … `0005_recruitment.sql`,
-  **`0006_performance.sql`** (performance_goals, performance_cycles,
-  performance_reviews + RLS + `complete_performance_review` RPC).
-- Seeds applied: `seed.sql`, `seed_wave2.sql`, `seed_wave3.sql`,
-  **`seed_wave4.sql`** (3 cycles — Q1 closed / Mid-Year active,
-  date-relative / Annual draft; 38 goals; 16 reviews with 3 pending in the
-  active cycle). All seeds rerun-safe (`ON CONFLICT DO NOTHING`).
+- Migrations applied: `0001_schema.sql` … `0006_performance.sql`,
+  **`0007_payroll.sql`** (payroll_runs + payroll_entries, strict RLS,
+  RPCs: `create_payroll_run`, `finalize_payroll_run`,
+  `mark_payroll_run_paid`).
+- Seeds applied: `seed.sql`, `seed_wave2.sql` … `seed_wave4.sql`,
+  **`seed_wave5.sql`** (3 date-relative runs: two months ago paid, last
+  month finalized, current month draft; entries snapshot live
+  compensation). All seeds rerun-safe.
 - Demo users unchanged: `hr.admin@growthifyedge.com` (hr_admin),
   `manager@growthifyedge.com` (manager, Priya Sharma GE-1008).
 - `dashboard_demo_metrics` remains unused by the app (harmless leftover).
-- **E2E cleanup:** targeted runs create "E2E"-prefixed records across
-  waves (leave requests, jobs/candidates + `E2E-*` employees, goals,
-  cycles + their reviews). `supabase/cleanup_e2e.sql` (service role)
-  purges all of them; safe to re-run whenever convenient.
+- **E2E cleanup:** run `supabase/cleanup_e2e.sql` (service role) once at
+  convenience — it purges all "E2E"-prefixed artifacts across waves plus
+  Wave 5 test payroll runs (period 2030+; seeded runs never match).
 
-## Wave 4 security model (verified live)
+## Wave 5 model + security (verified live)
 
-- `complete_performance_review` RPC is the only completion path —
-  `performance_reviews` has no UPDATE policy. Server-side overall rating
-  (average of 4 dimensions, one decimal), reviewer + timestamp recorded.
-  Verified live (19 probes): anonymous blocked; manager scoped to
-  self + direct reports for goals/reviews; manager cannot create/update
-  unrelated goals, complete unrelated reviews, review themselves, or
-  bypass the RPC; ratings outside 1–5 rejected; completed reviews cannot
-  be re-completed.
-- Goals: HR admin org-wide; managers create/edit direct-report goals
-  (insert/update policies use `is_manager_of`); individuals read their own
-  (self-service ready). Individuals read own COMPLETED reviews only.
-- One review per employee per cycle (`UNIQUE (employee_id, cycle_id)`).
+- Demo payroll math only: Gross = Base + Allowances, Net = Gross −
+  Deductions. Monthly base derives from compensation via the project rule
+  (monthly = x, biweekly = x·26/12, weekly = x·52/12) and is SNAPSHOTTED
+  into entries at run creation — later compensation edits never change
+  history. "Paid" is a status label only; no payment processing exists.
+- One run per org/month; entries unique per run/employee; entry INSERTs
+  have no RLS policy (RPC-only); entry updates are draft-only even for
+  HR admin — finalization locks everything at the DB level.
+- 15 live probes passed: anonymous fully blocked; **managers read no runs
+  and no other employees' entries** (payroll follows the Wave 1
+  compensation privacy rule; as employees they may read their OWN
+  finalized/paid entries — the intended self-service-ready policy);
+  manager RPC calls rejected; duplicate month blocked; non-draft
+  finalization blocked; paid entries locked even for admin.
+- `/payroll` route + nav are HR-admin only; manager deep link hits
+  Access Restricted.
 
-## Verified (live, Wave 4)
+## Verified (live, Wave 5)
 
-- 10 targeted Playwright tests green (admin: page/stats, goal create +
-  progress update, seeded reviews + distribution, cycle + review creation
-  and completion with 4.5 rating check, profile Performance tab, dashboard
-  reviews-due; manager: scoping, direct-report goal management,
-  direct-report review completion; mobile: no horizontal overflow).
+- 10 targeted Playwright tests green (admin: page/cards/seeded runs,
+  entries, currency switch conversion, full create → edit draft →
+  finalize → locked lifecycle, profile payroll snapshot, dashboard KPI;
+  manager: no nav, blocked route, hidden compensation/payroll on
+  profiles; mobile: no horizontal overflow).
 - Hosted: 5 preview smoke checks green; 1 production smoke green.
-- 128 unit tests, typecheck, lint, build all green.
+- 138 unit tests, typecheck, lint, build all green.
 
 ## Known notes
 
-- Rating model is fixed: four 1–5 dimensions, overall = average, bands
-  4.5+ Exceptional / 3.5+ Exceeds / 2.5+ Meets / 1.5+ Needs Improvement /
-  below Unsatisfactory. No weighted or configurable scoring by design.
-- Review flow: New Review creates a pending shell (admin or direct
-  manager); completion happens in the review drawer via the RPC.
-- Goals are flat (no OKR trees); completed goals must be at 100%.
-- Playwright: run targeted specs only (`npx playwright test performance`,
-  `recruitment`, `time-leave`) — full suite can trip free-tier auth rate
-  limits. Success toasts overlay drawer footer buttons in bottom-right;
-  specs dismiss them explicitly before footer clicks.
+- Payroll summary cards and the dashboard KPI ignore future-dated runs by
+  design (E2E runs use 2030+ months and never distort the demo).
+- The dashboard "Monthly Payroll" KPI shows the latest non-draft run
+  (falls back to the latest draft); "Payroll by Department" chart remains
+  a compensation-derived estimate.
+- Playwright: run targeted specs only (`npx playwright test payroll`,
+  `performance`, `recruitment`, `time-leave`) — the full suite can trip
+  free-tier auth rate limits.
 - Supabase embeds need explicit FK hints (see the *_SELECT constants in
   src/hooks).
