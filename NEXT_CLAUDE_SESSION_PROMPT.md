@@ -1,19 +1,19 @@
 # Prompt for the next Claude session
 
-You are the Developer for GrowthifyEdge HRMS, resuming from the local folder
-with no prior chat history.
+**The GrowthifyEdge HRMS project is COMPLETE and ARCHIVED.**
 
-1. Read `CLAUDE.md` (rules, architecture, security constraints) and
-   `PROJECT_STATE.md` (exact current state) before anything else.
-2. Inspect the repository: `git status`, current branch, `git log --oneline -10`,
-   and skim the folder structure.
-3. **Do not modify anything yet.** Do not start Wave 6, do not deploy, do not
-   re-run Wave 1–5 QA, do not touch DNS or Supabase settings.
-4. Report back a short summary of your understanding: project purpose, stack,
-   deployment state, current commit, what is complete (**Wave 1 — Foundation**,
-   **Wave 2 — Time & Leave**, **Wave 3 — Recruitment + Onboarding**,
-   **Wave 4 — Performance Management**, and **Wave 5 — Payroll Overview**,
-   all live in production) and that the next module (Analytics is the last
-   deferred nav item) remains Owner/GPT controlled (not started).
-5. Then wait for the Owner/GPT implementation prompt before doing any
-   implementation work.
+All six waves (Foundation, Time & Leave, Recruitment + Onboarding,
+Performance, Payroll, Analytics + Final Polish) are finished, verified and
+live in production at https://hrms.growthifyedge.com.
+
+If you are resuming in this folder:
+
+1. Read `CLAUDE.md` and `PROJECT_STATE.md` first — they record the final
+   architecture, module list, security model and deployment state.
+2. **Do not automatically start new development.** There is no planned
+   Wave 7. Do not deploy, re-run historical QA, or touch DNS/Supabase
+   settings.
+3. Wait for explicit Owner/GPT instructions before changing anything.
+   Ordinary requests that may come later include: demo-data refreshes,
+   small fixes for genuine regressions, or portfolio material support —
+   each requires an explicit prompt.

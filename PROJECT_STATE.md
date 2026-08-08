@@ -1,84 +1,84 @@
-# PROJECT_STATE.md — as of 2026-08-08
+# PROJECT_STATE.md — as of 2026-08-09
 
-## Status
+## PROJECT STATUS: COMPLETE / PRODUCTION / ARCHIVED
 
-- **Wave 1 — Foundation: COMPLETE and APPROVED.**
-- **Wave 2 — Time & Leave: COMPLETE** (live in production).
-- **Wave 3 — Recruitment + Onboarding: COMPLETE** (live in production).
-- **Wave 4 — Performance Management: COMPLETE** (live in production).
-- **Wave 5 — Payroll Overview: COMPLETE** (live in production).
-- **Wave 6: NOT STARTED.** Analytics is the only deferred nav item left.
-  The next module is Owner/GPT controlled — do not begin it unprompted.
-  Do not re-run Wave 1–5 QA unless a regression is discovered.
+- **Wave 1 — Foundation: COMPLETE** (people, documents, dashboard, auth, RLS)
+- **Wave 2 — Time & Leave: COMPLETE**
+- **Wave 3 — Recruitment + Onboarding: COMPLETE**
+- **Wave 4 — Performance Management: COMPLETE**
+- **Wave 5 — Payroll Overview: COMPLETE**
+- **Wave 6 — Analytics + Final Polish: COMPLETE**
+- **No open development phase.** Do not start new work without explicit
+  Owner/GPT instructions.
 
-## Deployment
+## Deployment (final)
 
-- **Production:** https://hrms.growthifyedge.com (custom domain attached by
-  the Owner; Cloudflare DNS managed by the Owner — never modify it).
+- **Production:** https://hrms.growthifyedge.com (Owner-managed custom
+  domain + Cloudflare DNS — never modify).
 - **Cloudflare Pages:** https://growthifyedge-hrms.pages.dev
   (project `growthifyedge-hrms`; build `npm run build`, output `dist`,
-  production branch `main`). Branch previews build automatically.
+  production branch `main`; SPA fallback via `public/_redirects`;
+  automatic branch previews — note aliases truncate at 28 characters).
 - **GitHub:** https://github.com/growthifyedge/growthifyedge-hrms
-  (branches `main` + one feature branch per wave).
-- **Production commit:** `8b0096f` — Wave 5 merged fast-forward to `main`;
-  verified live (Wave 5 bundle served, `/payroll` deep link 200,
-  authenticated smoke test passed against production).
+- **Final production commit:** `c26516a` (Wave 6, fast-forward on `main`;
+  verified live: bundle served, /analytics /dashboard and profile deep
+  links 200, authenticated smoke tests passed against production).
 
-## Backend (Supabase, project ref wjtsmpsflwxvkhxqcfyl)
+## Final module list
 
-- Migrations applied: `0001_schema.sql` … `0006_performance.sql`,
-  **`0007_payroll.sql`** (payroll_runs + payroll_entries, strict RLS,
-  RPCs: `create_payroll_run`, `finalize_payroll_run`,
-  `mark_payroll_run_paid`).
-- Seeds applied: `seed.sql`, `seed_wave2.sql` … `seed_wave4.sql`,
-  **`seed_wave5.sql`** (3 date-relative runs: two months ago paid, last
-  month finalized, current month draft; entries snapshot live
-  compensation). All seeds rerun-safe.
-- Demo users unchanged: `hr.admin@growthifyedge.com` (hr_admin),
-  `manager@growthifyedge.com` (manager, Priya Sharma GE-1008).
-- `dashboard_demo_metrics` remains unused by the app (harmless leftover).
-- **E2E cleanup:** run `supabase/cleanup_e2e.sql` (service role) once at
-  convenience — it purges all "E2E"-prefixed artifacts across waves plus
-  Wave 5 test payroll runs (period 2030+; seeded runs never match).
+Dashboard (live KPIs across all modules) · People (directory, profiles,
+documents) · Time & Leave (attendance + leave with approval RPC) ·
+Recruitment (jobs, pipeline, hire RPC) + Onboarding (six-task checklists) ·
+Performance (goals, cycles, four-dimension reviews with completion RPC) ·
+Payroll (runs/entries, snapshot math, finalize/paid RPCs, HR-admin only) ·
+Analytics (consolidated live analytics, HR-admin only) · Settings
+(org, departments, designations, locations, exchange rates).
 
-## Wave 5 model + security (verified live)
+## Architecture (final)
 
-- Demo payroll math only: Gross = Base + Allowances, Net = Gross −
-  Deductions. Monthly base derives from compensation via the project rule
-  (monthly = x, biweekly = x·26/12, weekly = x·52/12) and is SNAPSHOTTED
-  into entries at run creation — later compensation edits never change
-  history. "Paid" is a status label only; no payment processing exists.
-- One run per org/month; entries unique per run/employee; entry INSERTs
-  have no RLS policy (RPC-only); entry updates are draft-only even for
-  HR admin — finalization locks everything at the DB level.
-- 15 live probes passed: anonymous fully blocked; **managers read no runs
-  and no other employees' entries** (payroll follows the Wave 1
-  compensation privacy rule; as employees they may read their OWN
-  finalized/paid entries — the intended self-service-ready policy);
-  manager RPC calls rejected; duplicate month blocked; non-draft
-  finalization blocked; paid entries locked even for admin.
-- `/payroll` route + nav are HR-admin only; manager deep link hits
-  Access Restricted.
+- **Frontend:** React 19 + Vite 7 + TypeScript + Tailwind CSS 4 + React
+  Router 7 static SPA; @tanstack/react-query, react-hook-form + zod,
+  recharts, lucide-react, date-fns. No SSR, no workers, no paid services.
+- **Backend:** Supabase Free (project ref `wjtsmpsflwxvkhxqcfyl`) —
+  PostgreSQL, email/password auth, private `employee-documents` bucket.
+- **Migrations:** `0001_schema` … `0007_payroll` (all applied). Seeds:
+  `seed.sql` + `seed_wave2` … `seed_wave5` (all applied, rerun-safe).
+  `dashboard_demo_metrics` remains in the DB but the app no longer reads
+  it (kept — no migration just to drop it).
 
-## Verified (live, Wave 5)
+## Security model (final, all verified live)
 
-- 10 targeted Playwright tests green (admin: page/cards/seeded runs,
-  entries, currency switch conversion, full create → edit draft →
-  finalize → locked lifecycle, profile payroll snapshot, dashboard KPI;
-  manager: no nav, blocked route, hidden compensation/payroll on
-  profiles; mobile: no horizontal overflow).
-- Hosted: 5 preview smoke checks green; 1 production smoke green.
-- 138 unit tests, typecheck, lint, build all green.
+- RLS is the authorization boundary on every table; Wave 1 SECURITY
+  DEFINER helpers (`is_hr_admin`, `current_org_id`, `current_employee_id`,
+  `is_manager_of`, `can_view_employee`, `is_hiring_manager_for`).
+- Roles: `hr_admin` (full org), `manager` (self + direct reports;
+  view-only outside Time & Leave goal/review management; NO compensation,
+  payroll, or org analytics), `employee` (self-service-ready policies,
+  no UI).
+- Privileged writes go through SECURITY DEFINER RPCs only:
+  `review_leave_request`, `hire_candidate`, `complete_performance_review`,
+  `create_payroll_run`, `finalize_payroll_run`, `mark_payroll_run_paid`.
+- Money stored in USD; display-only conversion via `exchange_rates`.
+- 65+ live REST/RPC security probes passed across Waves 2–5; Wave 6
+  role-restriction verified in hosted tests.
 
-## Known notes
+## Test state (final)
 
-- Payroll summary cards and the dashboard KPI ignore future-dated runs by
-  design (E2E runs use 2030+ months and never distort the demo).
-- The dashboard "Monthly Payroll" KPI shows the latest non-draft run
-  (falls back to the latest draft); "Payroll by Department" chart remains
-  a compensation-derived estimate.
-- Playwright: run targeted specs only (`npx playwright test payroll`,
-  `performance`, `recruitment`, `time-leave`) — the full suite can trip
-  free-tier auth rate limits.
-- Supabase embeds need explicit FK hints (see the *_SELECT constants in
-  src/hooks).
+- 146 unit tests (Vitest) green; typecheck, lint, production build green.
+- Targeted Playwright per wave (auth/people/documents/routing from Wave 1;
+  time-leave, recruitment, performance, payroll, analytics) — run
+  **targeted specs only**; the full suite can trip Supabase free-tier auth
+  rate limits.
+- Demo users: `hr.admin@growthifyedge.com` (hr_admin),
+  `manager@growthifyedge.com` (manager, Priya Sharma GE-1008). Passwords
+  git-ignored in `.env.e2e`.
+
+## Housekeeping
+
+- `supabase/cleanup_e2e.sql` (service role) purges all E2E artifacts
+  across waves (E2E-prefixed records, `E2E-*` employees, payroll runs
+  dated 2030+). Run once after any targeted E2E session; never touches
+  seeded demo data. Wave 6 analytics tests are read-only (no cleanup).
+- Local backup: `growthifyedge-hrms-final-backup.zip` (see final report
+  for path/checksum). `.env.local` / `.env.e2e` remain git-ignored; only
+  `.env.example` is tracked.

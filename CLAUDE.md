@@ -2,6 +2,14 @@
 
 Read this and `PROJECT_STATE.md` before touching anything.
 
+## PROJECT STATUS: COMPLETE / PRODUCTION / ARCHIVED
+
+All six development waves are finished, verified and live in production
+(https://hrms.growthifyedge.com). There is **no open development phase** —
+do not start new work without explicit Owner/GPT instructions. Final
+modules: Dashboard, People, Time & Leave, Recruitment + Onboarding,
+Performance, Payroll, Analytics, Settings.
+
 ## Project identity
 
 **GrowthifyEdge HRMS & Employee Management Platform** — a premium **portfolio /
