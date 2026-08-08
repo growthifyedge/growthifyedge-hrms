@@ -44,6 +44,10 @@ test.describe('HR admin — Time & Leave', () => {
     await expect(page.getByText('Present', { exact: true }).first()).toBeVisible()
     // Live rows in the table (employee codes are rendered per row).
     await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 15_000 })
+    // Deep-link refresh keeps the SPA route and data (hosted _redirects check).
+    await page.reload()
+    await expect(page.getByRole('heading', { name: 'Time & Leave' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 15_000 })
   })
 
   test('attendance filters narrow and clear', async ({ page }) => {
