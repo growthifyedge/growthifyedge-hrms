@@ -479,22 +479,5 @@ export interface PayrollEntryWithRelations extends PayrollEntry {
   run: Pick<PayrollRun, 'id' | 'period_month' | 'status'> | null
 }
 
-export interface PendingAction {
-  id: string
-  label: string
-  detail: string
-  kind: 'leave' | 'document' | 'review' | 'interview'
-}
-
-export interface DashboardDemoMetrics {
-  id: string
-  organization_id: string
-  attendance_rate: number
-  on_leave_today: number
-  open_vacancies: number
-  pending_hr_actions: number
-  attendance_trend: { day: string; rate: number }[]
-  recruitment_pipeline: { stage: string; count: number }[]
-  pending_actions: PendingAction[] | null
-  updated_at: string
-}
+// The Wave 1 dashboard_demo_metrics table is no longer read by the app;
+// its types were removed with the last placeholder in Wave 6.

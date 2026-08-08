@@ -29,15 +29,31 @@ describe('navItemsForRole', () => {
     expect(navItemsForRole(undefined)).toEqual([])
   })
 
-  it('only enables shipped destinations (Waves 1–5)', () => {
+  it('enables every module of the finished product', () => {
     const enabled = NAV_ITEMS.filter((i) => i.enabled).map((i) => i.label)
     expect(enabled.sort()).toEqual(
-      ['Dashboard', 'Payroll', 'People', 'Performance', 'Recruitment', 'Settings', 'Time & Leave'].sort(),
+      [
+        'Analytics',
+        'Dashboard',
+        'Payroll',
+        'People',
+        'Performance',
+        'Recruitment',
+        'Settings',
+        'Time & Leave',
+      ].sort(),
     )
   })
 
-  it('keeps Payroll hidden from managers and employees', () => {
-    expect(navItemsForRole('manager').map((i) => i.label)).not.toContain('Payroll')
-    expect(navItemsForRole('employee').map((i) => i.label)).not.toContain('Payroll')
+  it('has no disabled placeholder items left', () => {
+    expect(NAV_ITEMS.filter((i) => !i.enabled)).toHaveLength(0)
+  })
+
+  it('keeps Payroll and Analytics hidden from managers and employees', () => {
+    for (const role of ['manager', 'employee'] as const) {
+      const labels = navItemsForRole(role).map((i) => i.label)
+      expect(labels).not.toContain('Payroll')
+      expect(labels).not.toContain('Analytics')
+    }
   })
 })

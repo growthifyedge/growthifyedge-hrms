@@ -2,12 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { formatISO, startOfMonth, subDays } from 'date-fns'
 import { getSupabase } from '../lib/supabase'
 import { toMonthlyUsd } from '../lib/currency'
-import type {
-  Announcement,
-  DashboardDemoMetrics,
-  Employee,
-  EmployeeCompensation,
-} from '../types/db'
+import type { Announcement, Employee, EmployeeCompensation } from '../types/db'
 
 export interface HeadcountStats {
   total: number
@@ -171,24 +166,9 @@ export function useAnnouncements(limit = 4) {
   })
 }
 
-/**
- * Temporary Wave 1 metrics for modules whose operational data arrives in later
- * waves (attendance, leave, recruitment). Replaced by real module queries later.
- */
-export function useDemoMetrics() {
-  return useQuery({
-    queryKey: ['dashboard', 'demo-metrics'],
-    queryFn: async (): Promise<DashboardDemoMetrics | null> => {
-      const { data, error } = await getSupabase()
-        .from('dashboard_demo_metrics')
-        .select('*')
-        .limit(1)
-        .maybeSingle()
-      if (error) throw error
-      return data as DashboardDemoMetrics | null
-    },
-  })
-}
+// Note: the Wave 1 dashboard_demo_metrics table is no longer read anywhere —
+// every dashboard metric now comes from live module data (Waves 2–5). The
+// table itself remains in the database as a harmless leftover.
 
 export function useMonthStart(): string {
   return formatISO(startOfMonth(new Date()), { representation: 'date' })

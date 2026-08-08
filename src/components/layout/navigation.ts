@@ -28,7 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Recruitment', path: '/recruitment', icon: Briefcase, enabled: true, roles: ['hr_admin', 'manager'] },
   { label: 'Performance', path: '/performance', icon: Target, enabled: true, roles: ['hr_admin', 'manager'] },
   { label: 'Payroll', path: '/payroll', icon: Wallet, enabled: true, roles: ['hr_admin'] },
-  { label: 'Analytics', path: '/analytics', icon: BarChart3, enabled: false, roles: ['hr_admin'] },
+  { label: 'Analytics', path: '/analytics', icon: BarChart3, enabled: true, roles: ['hr_admin'] },
   { label: 'Settings', path: '/settings', icon: Settings, enabled: true, roles: ['hr_admin'] },
 ]
 
