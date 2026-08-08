@@ -71,7 +71,7 @@ test.describe('Manager — direct report approval', () => {
     await page.goto('/time-leave')
     await page.getByRole('tab', { name: 'Leave' }).click()
     await page.getByRole('button', { name: /new request/i }).click()
-    await page.getByLabel('Employee', { exact: false }).selectOption({ label: 'Mateusz Kowalski (GE-1009)' })
+    await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Mateusz Kowalski (GE-1009)' })
     await page.getByLabel('Leave type').selectOption({ label: 'Unpaid Leave' })
     await page.getByLabel('Start date').fill(futureDate(50))
     await page.getByLabel('End date').fill(futureDate(50))
@@ -79,10 +79,9 @@ test.describe('Manager — direct report approval', () => {
     await page.getByRole('button', { name: /submit request/i }).click()
     await expect(page.getByText('Leave request submitted.')).toBeVisible({ timeout: 15_000 })
 
-    // Switch to the manager and approve exactly that request.
-    await page.getByRole('button', { name: 'Account menu' }).click()
-    await page.getByRole('button', { name: /sign out/i }).click()
-    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 })
+    // Switch to the manager: drop the stored session and sign in fresh
+    // (deterministic — avoids racing the account-menu dropdown).
+    await page.evaluate(() => window.localStorage.clear())
     await signIn(page, MANAGER_EMAIL!, MANAGER_PASSWORD!)
     await page.goto('/time-leave')
     await page.getByRole('tab', { name: 'Leave' }).click()

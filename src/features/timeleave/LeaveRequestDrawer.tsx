@@ -52,6 +52,7 @@ export function LeaveRequestDrawer({ open, onClose }: LeaveRequestDrawerProps) {
     handleSubmit,
     reset,
     watch,
+    setError,
     formState: { errors },
   } = useForm<LeaveFormValues>({
     resolver: zodResolver(schema),
@@ -85,6 +86,19 @@ export function LeaveRequestDrawer({ open, onClose }: LeaveRequestDrawerProps) {
     if (!profile) return
     const requestedDays = inclusiveLeaveDays(values.start_date, values.end_date)
     if (!requestedDays) return
+    // Submit-time balance guard: the zod check reads cached balances, which
+    // may still be loading on a fast submit — re-check against fresh data.
+    const type = (leaveTypes.data ?? []).find((t) => t.id === values.leave_type_id)
+    if (type?.is_paid) {
+      const summary = balances.data ?? (await balances.refetch()).data ?? []
+      const remaining = summary.find((b) => b.leaveTypeId === type.id)?.remaining ?? null
+      if (remaining !== null && requestedDays > remaining) {
+        setError('end_date', {
+          message: `Only ${remaining} day${remaining === 1 ? '' : 's'} remaining for this leave type`,
+        })
+        return
+      }
+    }
     try {
       await create.mutateAsync({
         organization_id: profile.organization_id,

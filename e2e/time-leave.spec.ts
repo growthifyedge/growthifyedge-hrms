@@ -21,7 +21,7 @@ async function openTimeLeave(page: Page) {
 async function createUnpaidRequest(page: Page, reason: string, startOffset: number) {
   await page.getByRole('tab', { name: 'Leave' }).click()
   await page.getByRole('button', { name: /new request/i }).click()
-  await page.getByLabel('Employee', { exact: false }).selectOption({ label: 'Elena Petrova (GE-1015)' })
+  await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Elena Petrova (GE-1015)' })
   await page.getByLabel('Leave type').selectOption({ label: 'Unpaid Leave' })
   await page.getByLabel('Start date').fill(futureDate(startOffset))
   await page.getByLabel('End date').fill(futureDate(startOffset))
@@ -72,7 +72,7 @@ test.describe('HR admin — Time & Leave', () => {
     await page.getByRole('button', { name: /mark attendance/i }).click()
     await expect(page.getByRole('heading', { name: 'Mark Attendance' })).toBeVisible()
     // Priya has seeded attendance on the prefilled (latest) date.
-    await page.getByLabel('Employee', { exact: false }).selectOption({ label: 'Priya Sharma (GE-1008)' })
+    await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Priya Sharma (GE-1008)' })
     await expect(
       page.getByText(/already exists for this employee and day/i),
     ).toBeVisible({ timeout: 15_000 })
@@ -113,7 +113,7 @@ test.describe('HR admin — Time & Leave', () => {
     await openTimeLeave(page)
     await page.getByRole('tab', { name: 'Leave' }).click()
     await page.getByRole('button', { name: /new request/i }).click()
-    await page.getByLabel('Employee', { exact: false }).selectOption({ label: 'Elena Petrova (GE-1015)' })
+    await page.getByRole('combobox', { name: /^employee/i }).selectOption({ label: 'Elena Petrova (GE-1015)' })
     await page.getByLabel('Leave type').selectOption({ label: 'Casual Leave' })
     await page.getByLabel('Start date').fill(futureDate(60))
     await page.getByLabel('End date').fill(futureDate(75)) // 16 days > 6-day entitlement

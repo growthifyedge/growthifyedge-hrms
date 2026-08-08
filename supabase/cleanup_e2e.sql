@@ -1,6 +1,11 @@
--- One-time cleanup of E2E-test records created during Wave 1 live verification.
+-- Cleanup of E2E-test records created during live verification (Waves 1–2).
 -- Run in the Supabase SQL Editor (service role). Safe to re-run.
 -- Scoped strictly to test patterns — no seeded or real records match.
+
+-- Wave 2: leave requests created by targeted E2E runs (reasons are always
+-- prefixed "E2E"); seeded demo requests never use that prefix.
+delete from public.leave_requests
+where reason like 'E2E %';
 
 -- E2E-uploaded document metadata (their storage objects are already removed)
 delete from public.employee_documents
@@ -16,8 +21,9 @@ where employee_id in (
 delete from public.employees
 where employee_code like 'E2E-%';
 
--- Verify: both counts must be 0, employee total back to 36
+-- Verify: all counts must be 0, employee total back to 36
 select
   (select count(*) from public.employees where employee_code like 'E2E-%') as e2e_employees,
   (select count(*) from public.employee_documents where document_name like 'E2E Test Document %') as e2e_documents,
+  (select count(*) from public.leave_requests where reason like 'E2E %') as e2e_leave_requests,
   (select count(*) from public.employees) as total_employees;
