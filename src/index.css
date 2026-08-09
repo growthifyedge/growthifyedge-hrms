@@ -44,3 +44,84 @@ body {
   outline: 2px solid var(--color-accent-500);
   outline-offset: 2px;
 }
+
+/* ---------------------------------------------------------------------------
+   Custom cursor (desktop only). The `custom-cursor` class is applied to
+   <html> by the CustomCursor component exclusively on fine-pointer devices
+   without prefers-reduced-motion — touch/coarse devices and reduced-motion
+   users keep native cursors untouched.
+   ------------------------------------------------------------------------- */
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* Hide the native cursor everywhere the custom one is responsible… */
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+  /* …but keep native behavior where it communicates something the ring
+     cannot: text caret in fields, native select menus, not-allowed on
+     disabled controls. The component fades the custom cursor out here. */
+  html.custom-cursor input,
+  html.custom-cursor textarea {
+    cursor: text !important;
+  }
+  html.custom-cursor select,
+  html.custom-cursor input[type="date"],
+  html.custom-cursor input[type="month"],
+  html.custom-cursor input[type="time"],
+  html.custom-cursor input[type="datetime-local"],
+  html.custom-cursor input[type="search"] {
+    cursor: auto !important;
+  }
+  html.custom-cursor :disabled,
+  html.custom-cursor [aria-disabled="true"] {
+    cursor: not-allowed !important;
+  }
+
+  [data-cursor-dot],
+  [data-cursor-ring] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200; /* above drawers (z-50) and toasts (z-100) */
+    pointer-events: none;
+    border-radius: 9999px;
+    opacity: 0;
+  }
+  [data-cursor-dot] {
+    width: 5px;
+    height: 5px;
+    background: var(--color-accent-600);
+    transition: opacity 150ms ease;
+  }
+  [data-cursor-ring] {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid rgb(100 116 139 / 0.55); /* slate-500 @ 55% */
+    transition:
+      width 180ms ease,
+      height 180ms ease,
+      border-color 180ms ease,
+      opacity 150ms ease;
+  }
+  [data-cursor-ring][data-state="interactive"] {
+    width: 34px;
+    height: 34px;
+    border-color: var(--color-accent-600);
+  }
+  [data-cursor-dot][data-state="interactive"] {
+    background: var(--color-accent-500);
+  }
+  [data-cursor-dot][data-state="hidden"],
+  [data-cursor-ring][data-state="hidden"] {
+    opacity: 0 !important;
+  }
+}
+
+/* Outside fine-pointer/no-reduced-motion contexts the cursor elements are
+   inert and invisible. */
+@media not ((pointer: fine) and (prefers-reduced-motion: no-preference)) {
+  [data-cursor-dot],
+  [data-cursor-ring] {
+    display: none;
+  }
+}

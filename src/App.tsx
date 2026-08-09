@@ -7,6 +7,7 @@ import { CurrencyProvider } from './contexts/CurrencyContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { AppShell } from './components/layout/AppShell'
 import { AccessDenied } from './components/ui/states'
+import { CustomCursor } from './components/ui/CustomCursor'
 import { EnvSetupScreen } from './features/setup/EnvSetupScreen'
 import { LoginPage } from './features/auth/LoginPage'
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
@@ -104,6 +105,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <CustomCursor />
       <ToastProvider>
         <AuthProvider>
           <CurrencyProvider>
