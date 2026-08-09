@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Activity, BarChart3, KeyRound, ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Button } from '../../components/ui/Button'
@@ -157,15 +158,25 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
               />
-              <TextField
-                label="Password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
+              <div>
+                <TextField
+                  label="Password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                <div className="mt-1.5 text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-medium text-slate-500 hover:text-accent-700"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
               {error && (
                 <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
                   {error}

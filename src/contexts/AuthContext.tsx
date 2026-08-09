@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!error) return { error: null }
         const friendly =
           error.message === 'Invalid login credentials'
-            ? 'Incorrect email or password. Please check the demo credentials and try again.'
+            ? 'Incorrect email or password. Please try again or reset your password.'
             : 'Unable to sign in right now. Please try again in a moment.'
         return { error: friendly }
       },

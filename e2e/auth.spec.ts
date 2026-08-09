@@ -4,7 +4,8 @@ import { ADMIN_EMAIL, ADMIN_PASSWORD, hasAdminCreds, signIn } from './helpers'
 test.describe('Authentication', () => {
   test('login page renders with demo access details', async ({ page }) => {
     await page.goto('/login')
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+    // Heading renamed to "Welcome back" in the Wave 1 login polish (60665f2).
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
     await expect(page.getByText(/demo access/i)).toBeVisible()
     await expect(page.getByLabel(/work email/i)).toBeVisible()
     await expect(page.getByLabel(/password/i)).toBeVisible()

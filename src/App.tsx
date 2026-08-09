@@ -9,6 +9,8 @@ import { AppShell } from './components/layout/AppShell'
 import { AccessDenied } from './components/ui/states'
 import { EnvSetupScreen } from './features/setup/EnvSetupScreen'
 import { LoginPage } from './features/auth/LoginPage'
+import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from './features/auth/ResetPasswordPage'
 import type { Role } from './types/db'
 
 const DashboardPage = lazy(() =>
@@ -109,6 +111,9 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/login" element={<LoginRoute />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                {/* Standalone — must render for recovery sessions too. */}
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route
                   path="/dashboard"
                   element={

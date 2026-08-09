@@ -6,6 +6,7 @@ import { DepartmentsSettings } from './DepartmentsSettings'
 import { DesignationsSettings } from './DesignationsSettings'
 import { LocationsSettings } from './LocationsSettings'
 import { ExchangeRatesSettings } from './ExchangeRatesSettings'
+import { SecuritySettings } from './SecuritySettings'
 
 const TABS = [
   { key: 'organization', label: 'Organization' },
@@ -13,6 +14,7 @@ const TABS = [
   { key: 'designations', label: 'Designations' },
   { key: 'locations', label: 'Work Locations' },
   { key: 'rates', label: 'Exchange Rates' },
+  { key: 'security', label: 'Security' },
 ]
 
 export function SettingsPage() {
@@ -27,6 +29,7 @@ export function SettingsPage() {
         {tab === 'designations' && <DesignationsSettings />}
         {tab === 'locations' && <LocationsSettings />}
         {tab === 'rates' && <ExchangeRatesSettings />}
+        {tab === 'security' && <SecuritySettings />}
       </div>
     </div>
   )
