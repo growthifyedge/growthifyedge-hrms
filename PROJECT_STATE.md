@@ -4,6 +4,20 @@
 
 ## Post-archive maintenance log
 
+- **2026-08-09 — Reset-route security fix + private Owner account**
+  (commit `595d39e`, live): `/reset-password` now renders its form ONLY
+  after a genuine supabase-js `PASSWORD_RECOVERY` event (listener attached
+  at client creation in `src/lib/passwordRecovery.ts`; in-memory flag,
+  cleared after use). Direct visits, normal signed-in sessions and
+  expired/forged links show "Reset link invalid or expired" instead —
+  verified directly against production. Signed-in users change passwords
+  in Settings → Security. A private Owner/Security account
+  (`growthifyedge@gmail.com`, real mailbox, `hr_admin` profile, **no
+  employees row**, hidden from all UI/metrics) is documented in
+  `docs/OWNER_ACCOUNT.md` — Owner creates the Auth user in the dashboard
+  and runs the rerun-safe profile SQL there. Demo identities unchanged;
+  `scripts/rotate-demo-passwords.mjs` remains their recovery path.
+
 - **2026-08-09 — Auth password UX** (commit `0dabbe1`, live): login
   "Forgot password?" link + updated invalid-login message;
   `/forgot-password` (resetPasswordForEmail, neutral confirmation);
