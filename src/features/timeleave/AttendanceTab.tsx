@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Pencil, Search, X } from 'lucide-react'
+import { Pencil, ScanFace, Search, X } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Avatar } from '../../components/ui/Avatar'
@@ -19,6 +19,7 @@ import {
   workedMinutes,
 } from '../../lib/timeLeave'
 import { formatDate, fullName } from '../../lib/format'
+import { isFaceTerminalRecord } from '../../lib/faceDemo'
 import { cn } from '../../lib/utils'
 import type { AttendanceRecordWithEmployee, AttendanceStatus } from '../../types/db'
 
@@ -34,20 +35,30 @@ export function AttendanceStatusBadge({ status }: { status: AttendanceStatus }) 
   return <Badge tone={STATUS_TONES[status] ?? 'slate'} label={ATTENDANCE_STATUS_LABELS[status] ?? status} />
 }
 
+/** Source badge for simulator-created records (raw marker never shown). */
+function FaceTerminalBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-accent-50 px-2 py-0.5 text-[11px] font-medium text-accent-700">
+      <ScanFace className="h-3 w-3" aria-hidden /> Face Terminal
+    </span>
+  )
+}
+
 const selectClass =
   'rounded-lg border border-slate-300 bg-white py-1.5 pl-2.5 pr-7 text-sm text-slate-700 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-100'
 
 interface AttendanceTabProps {
   onEdit: (record: AttendanceRecordWithEmployee) => void
+  /** Effective date and setter are owned by TimeLeavePage (shared with the demo panel). */
+  date: string | null
+  onDateChange: (date: string) => void
 }
 
-export function AttendanceTab({ onEdit }: AttendanceTabProps) {
+export function AttendanceTab({ onEdit, date, onDateChange }: AttendanceTabProps) {
   const { profile } = useAuth()
   const isAdmin = profile?.role === 'hr_admin'
 
   const latestDate = useLatestAttendanceDate()
-  const [dateOverride, setDateOverride] = useState('')
-  const date = dateOverride || latestDate.data || null
 
   const [departmentId, setDepartmentId] = useState('')
   const [status, setStatus] = useState('')
@@ -97,7 +108,7 @@ export function AttendanceTab({ onEdit }: AttendanceTabProps) {
           <input
             type="date"
             value={date ?? ''}
-            onChange={(e) => setDateOverride(e.target.value)}
+            onChange={(e) => onDateChange(e.target.value)}
             aria-label="Attendance date"
             className={selectClass}
           />
@@ -203,7 +214,12 @@ export function AttendanceTab({ onEdit }: AttendanceTabProps) {
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">{row.employee?.department?.name ?? '—'}</td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-slate-600">{formatDate(row.attendance_date)}</td>
-                      <td className="px-4 py-2.5"><AttendanceStatusBadge status={row.status} /></td>
+                      <td className="px-4 py-2.5">
+                        <span className="inline-flex flex-wrap items-center gap-1.5">
+                          <AttendanceStatusBadge status={row.status} />
+                          {isFaceTerminalRecord(row.notes) && <FaceTerminalBadge />}
+                        </span>
+                      </td>
                       <td className="px-4 py-2.5 text-slate-600">{formatTime(row.check_in)}</td>
                       <td className="px-4 py-2.5 text-slate-600">{formatTime(row.check_out)}</td>
                       <td className="px-4 py-2.5 text-slate-600">
@@ -239,7 +255,10 @@ export function AttendanceTab({ onEdit }: AttendanceTabProps) {
                       </p>
                       <p className="truncate font-mono text-xs text-slate-400">{row.employee?.employee_code}</p>
                     </div>
-                    <AttendanceStatusBadge status={row.status} />
+                    <span className="inline-flex flex-col items-end gap-1">
+                      <AttendanceStatusBadge status={row.status} />
+                      {isFaceTerminalRecord(row.notes) && <FaceTerminalBadge />}
+                    </span>
                   </div>
                   <dl className="mt-3 space-y-1 text-xs text-slate-500">
                     <MobileRow label="Date" value={formatDate(row.attendance_date)} />

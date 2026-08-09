@@ -7,6 +7,12 @@
 delete from public.leave_requests
 where reason like 'E2E %';
 
+-- Face Attendance Demo simulator: removes ALL simulator-created rows
+-- (identified by the notes marker), including video-run records. Manual
+-- attendance is never touched.
+delete from public.attendance_records
+where notes like '[DEMO_FACE_TERMINAL]%';
+
 -- Wave 5: payroll artifacts. E2E payroll runs always use far-future months
 -- (2030+); seeded demo runs use the current/recent months and never match.
 delete from public.payroll_entries

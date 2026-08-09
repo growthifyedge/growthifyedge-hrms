@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CalendarPlus, ClipboardCheck } from 'lucide-react'
 import { PageHeader } from '../../components/layout/AppShell'
 import { Tabs } from '../../components/ui/Tabs'
@@ -8,6 +9,7 @@ import { AttendanceTab } from './AttendanceTab'
 import { LeaveTab } from './LeaveTab'
 import { AttendanceFormDrawer } from './AttendanceFormDrawer'
 import { LeaveRequestDrawer } from './LeaveRequestDrawer'
+import { FaceAttendanceDemo } from './FaceAttendanceDemo'
 import { useLatestAttendanceDate } from '../../hooks/useAttendance'
 import type { AttendanceRecordWithEmployee } from '../../types/db'
 
@@ -25,6 +27,16 @@ export function TimeLeavePage() {
   const [editRecord, setEditRecord] = useState<AttendanceRecordWithEmployee | null>(null)
   const [requestOpen, setRequestOpen] = useState(false)
   const latestDate = useLatestAttendanceDate()
+
+  // Shared attendance date (filter + demo panel use the same selection).
+  const [dateOverride, setDateOverride] = useState('')
+  const attendanceDate = dateOverride || latestDate.data || null
+
+  // Portfolio-only Face Attendance DEMO: hidden behind ?attendanceDemo=1
+  // and strictly HR-admin (managers/employees never see it, even with the
+  // query parameter). Normal /time-leave is completely unchanged.
+  const [searchParams] = useSearchParams()
+  const showFaceDemo = isAdmin && searchParams.get('attendanceDemo') === '1'
 
   return (
     <div>
@@ -54,7 +66,16 @@ export function TimeLeavePage() {
         <Tabs tabs={TABS} active={tab} onChange={setTab} />
       </div>
 
-      {tab === 'attendance' && <AttendanceTab onEdit={(record) => setEditRecord(record)} />}
+      {tab === 'attendance' && (
+        <>
+          {showFaceDemo && <FaceAttendanceDemo date={attendanceDate} />}
+          <AttendanceTab
+            onEdit={(record) => setEditRecord(record)}
+            date={attendanceDate}
+            onDateChange={setDateOverride}
+          />
+        </>
+      )}
       {tab === 'leave' && <LeaveTab />}
 
       {isAdmin && (

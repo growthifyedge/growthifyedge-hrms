@@ -14,6 +14,7 @@ import {
   formatWorkedHours,
   workedMinutes,
 } from '../../lib/timeLeave'
+import { stripDemoMarker } from '../../lib/faceDemo'
 import { attendanceFormSchema, type AttendanceFormInput, type AttendanceFormValues } from './schemas'
 import type { AttendanceRecord } from '../../types/db'
 
@@ -43,7 +44,7 @@ export function AttendanceFormDrawer({ open, onClose, record, defaultDate }: Att
       shift: record?.shift ?? 'standard',
       check_in: record?.check_in?.slice(0, 5) ?? '',
       check_out: record?.check_out?.slice(0, 5) ?? '',
-      notes: record?.notes ?? '',
+      notes: stripDemoMarker(record?.notes),
     }),
     [record, defaultDate],
   )
@@ -83,7 +84,7 @@ export function AttendanceFormDrawer({ open, onClose, record, defaultDate }: Att
       shift: found.shift,
       check_in: found.check_in?.slice(0, 5) ?? '',
       check_out: found.check_out?.slice(0, 5) ?? '',
-      notes: found.notes ?? '',
+      notes: stripDemoMarker(found.notes),
     })
   }, [open, record, existing.data, reset])
 

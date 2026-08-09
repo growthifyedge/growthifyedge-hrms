@@ -4,6 +4,14 @@
 
 ## Post-archive maintenance log
 
+- **2026-08-09 — Face Attendance Demo simulator** (portfolio only):
+  hidden HR-admin-only panel on `/time-leave?attendanceDemo=1` that
+  simulates a face terminal pushing ~5 sequential check-ins into the
+  existing attendance system (no camera, no biometrics stored, no new
+  tables/dependencies, never overwrites existing records; rows tagged
+  via the notes marker and removable through `cleanup_e2e.sql`). See
+  `docs/FACE_ATTENDANCE_DEMO.md`.
+
 - **2026-08-09 — Reset-route security fix + private Owner account**
   (commit `595d39e`, live): `/reset-password` now renders its form ONLY
   after a genuine supabase-js `PASSWORD_RECOVERY` event (listener attached
