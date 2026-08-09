@@ -2,6 +2,21 @@
 
 ## PROJECT STATUS: COMPLETE / PRODUCTION / ARCHIVED
 
+## Post-archive maintenance log
+
+- **2026-08-09 — Auth password UX** (commit `0dabbe1`, live): login
+  "Forgot password?" link + updated invalid-login message;
+  `/forgot-password` (resetPasswordForEmail, neutral confirmation);
+  `/reset-password` (recovery-session updateUser, 8+ chars with letter +
+  number, expired-link handling); Settings → Security change-password
+  (authenticated updateUser — installed supabase-js has no
+  current-password parameter). Demo identities have no mailboxes:
+  `scripts/rotate-demo-passwords.mjs` remains their administrative
+  recovery path (no bypass exists). **Owner dashboard check:** Supabase →
+  Authentication → URL Configuration must include
+  `https://hrms.growthifyedge.com/reset-password` in the Redirect URLs
+  allow-list, or reset links will land on the site root.
+
 - **Wave 1 — Foundation: COMPLETE** (people, documents, dashboard, auth, RLS)
 - **Wave 2 — Time & Leave: COMPLETE**
 - **Wave 3 — Recruitment + Onboarding: COMPLETE**
@@ -20,9 +35,8 @@
   production branch `main`; SPA fallback via `public/_redirects`;
   automatic branch previews — note aliases truncate at 28 characters).
 - **GitHub:** https://github.com/growthifyedge/growthifyedge-hrms
-- **Final production commit:** `c26516a` (Wave 6, fast-forward on `main`;
-  verified live: bundle served, /analytics /dashboard and profile deep
-  links 200, authenticated smoke tests passed against production).
+- **Final production commit:** `0dabbe1` (Wave 6 archive at `c26516a`
+  plus the post-archive auth UX maintenance; verified live).
 
 ## Final module list
 
