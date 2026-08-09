@@ -1,80 +1,144 @@
 # CLAUDE.md — GrowthifyEdge HRMS
 
-Read this and `PROJECT_STATE.md` before touching anything.
+Permanent technical instructions for any future Claude session.
+Read this, `PROJECT_STATE.md`, `NEXT_CLAUDE_SESSION_PROMPT.md` and
+`docs/OWNER_ACCOUNT.md` before touching anything.
 
-## PROJECT STATUS: COMPLETE / PRODUCTION / ARCHIVED
+## PROJECT STATUS: COMPLETE / PRODUCTION / PORTFOLIO READY / ARCHIVED
 
-All six development waves are finished, verified and live in production
-(https://hrms.growthifyedge.com). There is **no open development phase** —
-do not start new work without explicit Owner/GPT instructions. Final
-modules: Dashboard, People, Time & Leave, Recruitment + Onboarding,
-Performance, Payroll, Analytics, Settings.
+All six development waves plus post-archive improvements are finished,
+verified and live. There is **no open development phase**. Do not start
+new work, add modules, or refactor without explicit Owner/GPT
+instructions.
 
-## Project identity
+## Project purpose
 
-**GrowthifyEdge HRMS & Employee Management Platform** — a premium **portfolio /
-client-showcase** application (Upwork, Fiverr, LinkedIn, YouTube demos, client
-meetings). It is *not* a paid SaaS. Never call it "AI HRMS" or "Enterprise
-HRMS"; no AI functionality is approved.
+**GrowthifyEdge HRMS & Employee Management Platform** — a premium
+portfolio/showcase application demonstrating a modern integrated HR
+management system (Upwork, Fiverr, LinkedIn, YouTube demos, client
+meetings). It is *not* a paid SaaS. No AI functionality is included or
+approved; never label it "AI HRMS".
 
 ## Team roles (fixed)
 
-- **Muhammad Junaid** — Owner, Product Owner, final decision-maker.
-- **GPT** — Product Strategist, Architect, BA, UX Consultant, QA Lead, PM.
-- **Claude** — Developer and technical implementer. Implement only approved
-  requirements; do not independently add modules, change workflows, replace
-  the stack, or start a later wave.
+- **Owner:** Muhammad Junaid / GrowthifyEdge — final product and
+  business decision maker.
+- **GPT:** Solution Architect / BA / PM / QA / prompt engineer.
+- **Claude:** Implementation engineer. Implements only approved
+  requirements; must not independently expand scope, add modules, or
+  start new development.
 
-## Governing rules
+## Final architecture
 
-1. **Showcase-first:** maximum visual/business impact with minimum development
-   time. Premium look ("Executive Light": light neutrals, white surfaces, navy
-   `#0f2440` sidebar, single blue accent), calm and professional. Do not
-   overengineer.
-2. **Free-tier only:** no paid APIs, templates, fonts, AI, hosting, or
-   subscriptions. Everything must run on Cloudflare Pages Free + Supabase Free.
-3. **Do not expand scope.** When a detail is unspecified, choose the simplest
-   professional solution, document it, and continue. Stop only for genuine
-   blockers (missing access, destructive prod operation, paid requirement,
-   requirement conflict, unresolvable security risk).
+- **Frontend:** React 19 + Vite 7 + TypeScript + Tailwind CSS 4 +
+  React Router 7 — static SPA (no SSR, no Next.js, no Vercel, no custom
+  servers, no Cloudflare Workers business logic).
+- **Libraries:** @supabase/supabase-js, @tanstack/react-query,
+  react-hook-form + zod, recharts, lucide-react, date-fns.
+  Tests: Vitest + Testing Library + Playwright.
+- **Database/Auth/Storage:** Supabase Free (project ref
+  `wjtsmpsflwxvkhxqcfyl`) — PostgreSQL, email/password auth, private
+  `employee-documents` bucket.
+- **Authorization:** Supabase RLS + trusted `profiles.role` model
+  (`hr_admin`, `manager`, `employee`).
+- **Hosting:** Cloudflare Pages, Git-based deploys from `main`
+  (build `npm run build`, output `dist`, SPA fallback via
+  `public/_redirects`; branch previews auto-build — aliases truncate at
+  28 characters).
+- **Production:** https://hrms.growthifyedge.com (Owner-managed domain
+  and DNS — never modify).
+- **Provider URL:** https://growthifyedge-hrms.pages.dev
+- **Repository:** https://github.com/growthifyedge/growthifyedge-hrms
 
-## Approved architecture
+## Cloudflare rules
 
-- **Frontend:** React 19 + Vite 7 + TypeScript + Tailwind CSS 4 + React Router 7
-  — a static SPA. No SSR, no Next.js, **no Vercel anything**, no custom
-  servers, no Cloudflare Workers business logic.
-- **Data/auth/storage:** Supabase (PostgreSQL, Auth email/password, private
-  Storage bucket `employee-documents`, RLS).
-- **Libraries:** @supabase/supabase-js, @tanstack/react-query, react-hook-form
-  + zod, recharts, lucide-react, date-fns. Tests: Vitest + Testing Library +
-  Playwright.
-- **Hosting:** Cloudflare Pages, Git-based deploys. Build `npm run build`,
-  output `dist`, production branch `main`, SPA fallback via `public/_redirects`.
+Free-tier architecture only. No Vercel dependency, no Node-only
+production dependency, no unnecessary Worker backend. Any future
+addition must remain Cloudflare Pages-compatible.
 
-## Security rules
+## Security rules (do not weaken)
 
-- **RLS is the authorization boundary** — never rely on hidden UI. Policies in
-  `supabase/migrations/0002_rls.sql` (helpers are SECURITY DEFINER to avoid
-  recursion); storage policies in `0003_storage.sql`.
-- Roles: `hr_admin` (full org), `manager` (self + direct reports; **no
-  compensation access**, no settings), `employee` (policies ready, UI deferred).
-- All money stored in **USD**; display-only conversion via `exchange_rates`
-  (demo rates). USD rate locked to 1 by policy.
-- **Never** put the service-role key in frontend code/env, commit any secret,
-  or print credentials. `.env.local` / `.env.e2e` are git-ignored; only
-  `.env.example` is tracked. No physical deletes of employees — status
+- **RLS is the primary authorization boundary** — never rely on hidden
+  UI. Helpers are SECURITY DEFINER (`is_hr_admin`, `current_org_id`,
+  `current_employee_id`, `is_manager_of`, `can_view_employee`,
+  `is_hiring_manager_for`). Privileged writes go only through SECURITY
+  DEFINER RPCs: `review_leave_request`, `hire_candidate`,
+  `complete_performance_review`, `create_payroll_run`,
+  `finalize_payroll_run`, `mark_payroll_run_paid`.
+- Never expose the Supabase service-role key in frontend code or env.
+  Never commit passwords or secrets. `.env.local` / `.env.e2e` stay
+  git-ignored; only `.env.example` is tracked.
+- Demo credentials are never stored in the repository. Demo password
+  rotation stays local/admin-only (`scripts/rotate-demo-passwords.mjs`).
+  There is deliberately NO browser administrative reset bypass.
+- Money is stored in USD; display-only conversion via `exchange_rates`
+  (USD rate locked to 1). No physical deletes of employees — status
   archiving only.
-- Supabase PostgREST embeds require explicit FK hints (two relationships exist
-  between employees and departments); see `EMPLOYEE_SELECT` in
-  `src/hooks/useEmployees.ts`.
+- Supabase PostgREST embeds require explicit FK hints (see the
+  `*_SELECT` constants in `src/hooks`).
+
+## Authentication model (final)
+
+| Identity | Role | Purpose |
+| --- | --- | --- |
+| `hr.admin@growthifyedge.com` | `hr_admin` | Public demo HR admin for reviewers. Password never stored in repo. |
+| `manager@growthifyedge.com` | `manager` | Public demo manager (team-scoped). Password never stored in repo. |
+| `growthifyedge@gmail.com` | `hr_admin` (profiles/RLS) | **Private Owner / Security Owner.** Real inbox → real Forgot Password recovery. |
+
+Owner account rules: NOT an employee, has NO `employees` row, never
+appears in People/Demo Access/any UI, never affects any employee count
+or metric, and its email is never hard-coded in frontend components.
+Runbook: `docs/OWNER_ACCOUNT.md`.
+
+## Password recovery security (do not weaken in refactors)
+
+- `/forgot-password` → `supabase.auth.resetPasswordForEmail` with
+  production callback `https://hrms.growthifyedge.com/reset-password`
+  (must remain on the Supabase redirect allow-list). Response is
+  neutral — never reveals whether an account exists.
+- `/reset-password` shows the new-password form ONLY after a genuine
+  supabase-js `PASSWORD_RECOVERY` event for the current page load
+  (gate: `src/lib/passwordRecovery.ts`, listener attached at client
+  creation in `src/lib/supabase.ts`). Direct visits, normal signed-in
+  sessions, and forged/expired recovery URLs must always show
+  "Reset link invalid or expired".
+- Normal signed-in users change passwords via **Settings → Security**.
+
+## Face Attendance Demo (portfolio simulator)
+
+Hidden URL: `https://hrms.growthifyedge.com/time-leave?attendanceDemo=1`
+(HR Admin only; managers/employees never see it). It is a SIMULATOR:
+no physical biometric hardware, no webcam, no camera permission, no
+face-recognition API, no biometric processing, and no biometric
+template/image storage or tables. It reuses `attendance_records` via
+the authenticated client; simulator rows carry the internal notes
+marker `[DEMO_FACE_TERMINAL]` (never rendered raw — the UI derives a
+"Face Terminal" badge). Normal `/time-leave` is unchanged. Details:
+`docs/FACE_ATTENDANCE_DEMO.md`.
+
+Future real integration concept: compatible biometric hardware →
+vendor API/SDK connector → secure attendance integration layer → HRMS
+attendance. The vendor/device performs verification; HRMS receives
+attendance events only. Never store client fingerprints or face
+templates in the HRMS without a separately reviewed requirement.
+
+## Custom cursor
+
+`src/components/ui/CustomCursor.tsx` is the single global desktop
+cursor system (dot + ring): fine-pointer devices only, respects
+`prefers-reduced-motion`, falls back to native cursors on touch/mobile,
+preserves native text/select/disabled cursors, zero dependencies.
+Never duplicate cursor logic inside individual screens.
 
 ## Working conventions
 
-- Structure: `src/components` (ui/layout), `src/contexts` (auth, currency,
-  toast), `src/features` (route modules), `src/hooks` (React Query),
-  `src/lib`, `supabase/` (migrations + seed), `e2e/`, `docs/`.
-- Verify with: `npm run typecheck`, `npm run lint`, `npm test`,
-  `npm run build`. Playwright integration tests need `E2E_*` vars from
-  `.env.e2e` — run **targeted specs**, not repeated full suites (free-tier
-  auth rate-limits burst sign-ins).
-- Docs: `docs/SUPABASE_SETUP.md`, `docs/CLOUDFLARE_DEPLOYMENT.md`.
+- Structure: `src/components` (ui/layout), `src/contexts`,
+  `src/features` (route modules), `src/hooks`, `src/lib`, `supabase/`
+  (migrations + seeds), `e2e/`, `docs/`, `scripts/`.
+- Verify with `npm run typecheck`, `npm run lint`, `npm test`,
+  `npm run build`. Playwright needs `E2E_*` vars from `.env.e2e`; run
+  **targeted specs only** (free-tier auth rate-limits burst sign-ins).
+- E2E artifacts are always "E2E"-marked; `supabase/cleanup_e2e.sql`
+  (service role) purges them without touching seeded demo data.
+- Docs: `docs/SUPABASE_SETUP.md`, `docs/CLOUDFLARE_DEPLOYMENT.md`,
+  `docs/OWNER_ACCOUNT.md`, `docs/FACE_ATTENDANCE_DEMO.md`.
