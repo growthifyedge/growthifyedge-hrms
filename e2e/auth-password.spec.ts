@@ -27,20 +27,43 @@ test.describe('Password management UX', () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
-  test('reset page rejects an invalid/expired session gracefully', async ({ page }) => {
+  test('direct /reset-password visit never shows the password form', async ({ page }) => {
     await page.goto('/reset-password')
-    await page.getByLabel('New password').fill('Sunrise42')
-    await page.getByLabel('Confirm password').fill('Sunrise42')
-    await page.getByRole('button', { name: /update password/i }).click()
-    await expect(page.getByRole('alert')).toContainText(/invalid or has expired/i, {
+    await expect(page.getByRole('heading', { name: /reset link invalid or expired/i })).toBeVisible({
       timeout: 15_000,
     })
-    await expect(page.getByRole('link', { name: /request a new link/i })).toBeVisible()
+    await expect(page.getByLabel('New password')).toHaveCount(0)
+    await expect(page.getByLabel('Confirm password')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /update password/i })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /request a new reset link/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /back to sign in/i })).toBeVisible()
   })
 
-  test('reset page surfaces expired-link errors from the URL hash', async ({ page }) => {
+  test('expired/malformed recovery links never show the password form', async ({ page }) => {
     await page.goto('/reset-password#error=access_denied&error_description=Email+link+is+invalid')
-    await expect(page.getByRole('alert')).toContainText(/invalid or has expired/i)
+    await expect(page.getByRole('heading', { name: /reset link invalid or expired/i })).toBeVisible()
+    await expect(page.getByLabel('New password')).toHaveCount(0)
+    // A forged type=recovery hash without a real token must not unlock it either.
+    await page.goto('/reset-password#access_token=forged&type=recovery')
+    await expect(page.getByRole('heading', { name: /reset link invalid or expired/i })).toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(page.getByLabel('New password')).toHaveCount(0)
+  })
+})
+
+test.describe('Reset page — normal authenticated session', () => {
+  test.skip(!hasAdminCreds, 'Requires E2E_HR_ADMIN_EMAIL / E2E_HR_ADMIN_PASSWORD')
+  test.skip(({ isMobile }) => !!isMobile, 'Desktop check is sufficient')
+
+  test('a signed-in session is not treated as password recovery', async ({ page }) => {
+    await signIn(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
+    await page.goto('/reset-password')
+    await expect(page.getByRole('heading', { name: /reset link invalid or expired/i })).toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(page.getByLabel('New password')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /update password/i })).toHaveCount(0)
   })
 })
 
